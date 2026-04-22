@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ namespace Colhetiva.Core.Interfaces.Repositories
         IUsuarioRepository UsuarioRepository { get; }
         ICidadeRepository CidadeRepository { get; }
         IEnderecoRepository EnderecoRepository { get; }
+        IUserContextRepository UserContextRepository { get; }
         Task<int> CompleteAsync();
     }
 }

@@ -1,4 +1,4 @@
-﻿using Colhetiva.Core.Entities;
+using Colhetiva.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,6 +19,7 @@ namespace Colhetiva.Infrastructure.Context
         public DbSet<Endereco> Enderecos { get; set; }
         public DbSet<Cidade> Cidades { get; set; }
         public DbSet<Estado> Estados { get; set; }
+        public DbSet<UserContext> UserContexts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +36,18 @@ namespace Colhetiva.Infrastructure.Context
                       .WithOne()
                       .HasForeignKey<Usuario>(u => u.EnderecoId)
                       .IsRequired();
+
+                entity.HasMany(u => u.UserContexts)
+                      .WithOne(uc => uc.Usuario)
+                      .HasForeignKey(uc => uc.UsuarioId)
+                      .IsRequired();
+            });
+
+            modelBuilder.Entity<UserContext>(entity =>
+            {
+                entity.HasKey(uc => uc.Id);
+                entity.Property(uc => uc.Role).IsRequired();
+                entity.Property(uc => uc.HortaId).IsRequired(false);
             });
 
             modelBuilder.Entity<Endereco>(entity =>
