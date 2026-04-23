@@ -12,6 +12,7 @@ namespace Colhetiva.Core.Entities
         // Propriedade escalar para HortaId
         public Guid? HortaId { get; set; }
 
-        // TODO: Adicionar navigation property para a entidade Horta na próxima etapa.
+        // Navigation property para a entidade Horta
+        public Horta? Horta { get; set; }
     }
 }

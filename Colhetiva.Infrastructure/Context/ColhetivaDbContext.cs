@@ -20,6 +20,11 @@ namespace Colhetiva.Infrastructure.Context
         public DbSet<Cidade> Cidades { get; set; }
         public DbSet<Estado> Estados { get; set; }
         public DbSet<UserContext> UserContexts { get; set; }
+        public DbSet<Horta> Hortas { get; set; }
+        public DbSet<Canteiro> Canteiros { get; set; }
+        public DbSet<Solicitacao> Solicitacoes { get; set; }
+        public DbSet<Ferramenta> Ferramentas { get; set; }
+        public DbSet<Emprestimo> Emprestimos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,13 +82,94 @@ namespace Colhetiva.Infrastructure.Context
                       .IsRequired();
             });
 
-            modelBuilder.Entity<Estado>(entity =>
-            {
-                entity.HasKey(e => e.Id);
+             modelBuilder.Entity<Estado>(entity =>
+             {
+                 entity.HasKey(e => e.Id);
+ 
+                 entity.Property(e => e.Nome).IsRequired().HasMaxLength(75);
+                 entity.Property(e => e.Sigla).IsRequired().HasMaxLength(2);
+             });
 
-                entity.Property(e => e.Nome).IsRequired().HasMaxLength(75);
-                entity.Property(e => e.Sigla).IsRequired().HasMaxLength(2);
-            });
-        }
+             modelBuilder.Entity<Horta>(entity =>
+             {
+                 entity.HasKey(h => h.Id);
+ 
+                 entity.Property(h => h.Nome).IsRequired().HasMaxLength(150);
+                 entity.Property(h => h.Regras).IsRequired(false);
+ 
+                 entity.HasOne(h => h.Endereco)
+                       .WithMany()
+                       .HasForeignKey(h => h.EnderecoId)
+                       .IsRequired();
+ 
+                 entity.HasOne(h => h.Usuario)
+                       .WithMany()
+                       .HasForeignKey(h => h.UsuarioId)
+                       .IsRequired();
+             });
+
+             modelBuilder.Entity<Canteiro>(entity =>
+             {
+                 entity.HasKey(c => c.Id);
+ 
+                 entity.Property(c => c.Identificacao).IsRequired().HasMaxLength(50);
+                 entity.Property(c => c.Dimensoes).IsRequired(false).HasMaxLength(50);
+                 entity.Property(c => c.Status).IsRequired();
+ 
+                 entity.HasOne(c => c.Horta)
+                       .WithMany(h => h.Canteiros)
+                       .HasForeignKey(c => c.HortaId)
+                       .IsRequired();
+             });
+
+             modelBuilder.Entity<Solicitacao>(entity =>
+             {
+                 entity.HasKey(s => s.Id);
+ 
+                 entity.Property(s => s.DataPedido).IsRequired();
+                 entity.Property(s => s.Status).IsRequired();
+ 
+                 entity.HasOne(s => s.Usuario)
+                       .WithMany()
+                       .HasForeignKey(s => s.UsuarioId)
+                       .IsRequired();
+ 
+                 entity.HasOne(s => s.Canteiro)
+                       .WithMany()
+                       .HasForeignKey(s => s.CanteiroId)
+                       .IsRequired();
+             });
+
+             modelBuilder.Entity<Ferramenta>(entity =>
+             {
+                 entity.HasKey(f => f.Id);
+ 
+                 entity.Property(f => f.Nome).IsRequired().HasMaxLength(150);
+                 entity.Property(f => f.Status).IsRequired();
+ 
+                 entity.HasOne(f => f.Horta)
+                       .WithMany(h => h.Ferramentas)
+                       .HasForeignKey(f => f.HortaId)
+                       .IsRequired();
+             });
+
+             modelBuilder.Entity<Emprestimo>(entity =>
+             {
+                 entity.HasKey(e => e.Id);
+ 
+                 entity.Property(e => e.DataRetirada).IsRequired();
+                 entity.Property(e => e.DataDevolucao).IsRequired(false);
+ 
+                 entity.HasOne(e => e.Usuario)
+                       .WithMany()
+                       .HasForeignKey(e => e.UsuarioId)
+                       .IsRequired();
+ 
+                 entity.HasOne(e => e.Ferramenta)
+                       .WithMany()
+                       .HasForeignKey(e => e.FerramentaId)
+                       .IsRequired();
+             });
+         }
     }
 }

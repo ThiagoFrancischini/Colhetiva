@@ -14,12 +14,18 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ColhetivaDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Register repositories
-builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
-builder.Services.AddScoped<ICidadeRepository, CidadeRepository>();
-builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
-builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+ // Register repositories
+ builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
+ builder.Services.AddScoped<ICidadeRepository, CidadeRepository>();
+ builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
+ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+ builder.Services.AddScoped<IUserContextRepository, UserContextRepository>();
+ builder.Services.AddScoped<IHortaRepository, HortaRepository>();
+ builder.Services.AddScoped<ICanteiroRepository, CanteiroRepository>();
+ builder.Services.AddScoped<ISolicitacaoRepository, SolicitacaoRepository>();
+ builder.Services.AddScoped<IFerramentaRepository, FerramentaRepository>();
+ builder.Services.AddScoped<IEmprestimoRepository, EmprestimoRepository>();
+ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register services
 builder.Services.AddScoped<ICidadeService, CidadeService>();
