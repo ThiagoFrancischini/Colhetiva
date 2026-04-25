@@ -32,6 +32,11 @@ builder.Services.AddScoped<ICidadeService, CidadeService>();
 builder.Services.AddScoped<IEstadoService, EstadoService>();
 builder.Services.AddScoped<IEnderecoService, EnderecoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IHortaService, HortaService>();
+builder.Services.AddScoped<ICanteiroService, CanteiroService>();
+builder.Services.AddScoped<ISolicitacaoService, SolicitacaoService>();
+builder.Services.AddScoped<IFerramentaService, FerramentaService>();
+builder.Services.AddScoped<IEmprestimoService, EmprestimoService>();
 
 var app = builder.Build();
 

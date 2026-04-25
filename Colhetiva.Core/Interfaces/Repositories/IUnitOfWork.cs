@@ -13,6 +13,11 @@ namespace Colhetiva.Core.Interfaces.Repositories
         ICidadeRepository CidadeRepository { get; }
         IEnderecoRepository EnderecoRepository { get; }
         IUserContextRepository UserContextRepository { get; }
+        IHortaRepository HortaRepository { get; }
+        ICanteiroRepository CanteiroRepository { get; }
+        ISolicitacaoRepository SolicitacaoRepository { get; }
+        IFerramentaRepository FerramentaRepository { get; }
+        IEmprestimoRepository EmprestimoRepository { get; }
         Task<int> CompleteAsync();
     }
 }

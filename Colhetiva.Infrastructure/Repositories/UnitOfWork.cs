@@ -13,6 +13,11 @@ namespace Colhetiva.Infrastructure.Repositories
         public ICidadeRepository CidadeRepository { get; }
         public IEnderecoRepository EnderecoRepository { get; }
         public IUserContextRepository UserContextRepository { get; }
+        public IHortaRepository HortaRepository { get; }
+        public ICanteiroRepository CanteiroRepository { get; }
+        public ISolicitacaoRepository SolicitacaoRepository { get; }
+        public IFerramentaRepository FerramentaRepository { get; }
+        public IEmprestimoRepository EmprestimoRepository { get; }
 
         public UnitOfWork(
             ColhetivaDbContext context,
@@ -20,7 +25,12 @@ namespace Colhetiva.Infrastructure.Repositories
             IUsuarioRepository usuarioRepository,
             ICidadeRepository cidadeRepository,
             IEnderecoRepository enderecoRepository,
-            IUserContextRepository userContextRepository)
+            IUserContextRepository userContextRepository,
+            IHortaRepository hortaRepository,
+            ICanteiroRepository canteiroRepository,
+            ISolicitacaoRepository solicitacaoRepository,
+            IFerramentaRepository ferramentaRepository,
+            IEmprestimoRepository emprestimoRepository)
         {
             _context = context;
             EstadoRepository = estadoRepository;
@@ -28,6 +38,11 @@ namespace Colhetiva.Infrastructure.Repositories
             CidadeRepository = cidadeRepository;
             EnderecoRepository = enderecoRepository;
             UserContextRepository = userContextRepository;
+            HortaRepository = hortaRepository;
+            CanteiroRepository = canteiroRepository;
+            SolicitacaoRepository = solicitacaoRepository;
+            FerramentaRepository = ferramentaRepository;
+            EmprestimoRepository = emprestimoRepository;
         }
 
         public async Task<int> CompleteAsync()
