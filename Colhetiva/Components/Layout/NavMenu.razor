@@ -1,0 +1,48 @@
+﻿@inject NavigationManager NavigationManager
+@using Colhetiva.Tools
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Eventify</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+            <NavLink class="nav-link" href="/meus-eventos" Match="NavLinkMatch.All">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Meus Eventos
+            </NavLink>
+            <NavLink class="nav-link" href="/meus-ingressos" Match="NavLinkMatch.All">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Meus Ingressos
+            </NavLink>
+            <NavLink class="nav-link" href="/perfil" Match="NavLinkMatch.All">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Perfil
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <a class="nav-link" href="#" @onclick="Logout" @onclick:preventDefault>
+                <span class="bi bi-box-arrow-right-nav-menu" aria-hidden="true"></span> Sair
+            </a>
+        </div>
+    </nav>
+
+    <footer class="app-footer-menu">
+        Universidade de Caxias do Sul,
+        @DateTime.Now.Year
+    </footer>
+</div>
+
+@code {
+    private void Logout()
+    {
+        SessionTools.LimparSessao();
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

@@ -1,0 +1,124 @@
+﻿@page "/"
+@page "/login"
+@layout Components.Layout.EmptyLayout
+
+@inject Colhetiva.Core.Interfaces.Service.IUsuarioService usuarioService
+@inject NavigationManager NavigationManager
+
+@using Colhetiva.DTOs
+@using Colhetiva.Core.Entities
+
+<div class="login-page-wrapper">
+    <div class="gradient-panel">
+        <h2 class="app-title">COLHETIVA</h2>
+    </div>
+
+    <div class="login-form-panel">
+        <h2 class="welcome-text">BEM VINDO</h2>
+
+        <EditForm Model="UsuarioLoginDto" OnSubmit="Autenticar" class="login-form">
+            <DataAnnotationsValidator /> <div class="form-group mb-3">
+                <div class="input-group">
+                    <InputText class="form-control login-input" @bind-Value="UsuarioLoginDto.Email" placeholder="Email" />
+                </div>
+                <ValidationMessage For="@(() => UsuarioLoginDto.Email)" />
+            </div>
+
+            <div class="form-group mb-3">
+                <div class="input-group">
+                    <InputText type="password"
+                    class="form-control login-input"
+                               @bind-Value="UsuarioLoginDto.Password"
+                               placeholder="Password" />
+                </div>
+                <ValidationMessage For="@(() => UsuarioLoginDto.Password)" />
+            </div>
+
+            <div class="forgot-password-link">
+                <a href="#" class="text-decoration-none">Esqueci minha senha?</a>
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensagemErro))
+            {
+                <div class="alert alert-danger mt-3">@mensagemErro</div>
+            }
+
+            @if (isLoading)
+            {
+                <p class="mt-3">Autenticando...</p>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-primary btn-block login-button mt-4">Login</button>
+            }
+        </EditForm>
+
+        <div class="register-link-section mt-4">
+            <span>Não possui uma conta? </span>
+            <a href="#" @onclick="NavegarParaCadastro" @onclick:preventDefault class="fw-bold text-decoration-none">Cadastre-se</a>
+        </div>
+
+        <footer class="app-footer">
+            <p>Universidade de Caxias do Sul, 2025</p>
+        </footer>
+    </div>
+</div>
+
+@code {
+    private UsuarioLoginDto UsuarioLoginDto = new UsuarioLoginDto();
+
+    private string mensagemErro = string.Empty;
+    private bool isLoading = false;
+
+    /*protected override async Task OnInitializedAsync()
+    {
+        var usuarioLogado = Tools.SessionTools.GetUsuarioLogado();
+
+        if(usuarioLogado != null && usuarioLogado.Id != Guid.Empty)
+        {
+            NavigationManager.NavigateTo("/home");
+        } 
+    }*/
+
+    private async Task Autenticar()
+    {
+        isLoading = true;
+        mensagemErro = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            if (string.IsNullOrEmpty(UsuarioLoginDto.Email) || string.IsNullOrEmpty(UsuarioLoginDto.Password))
+            {
+                throw new ApplicationException("Informe seu email e senha!");
+            }
+
+            var usuarioAutenticado = await usuarioService.Autenticar(UsuarioLoginDto.Email, UsuarioLoginDto.Password);
+
+            if (usuarioAutenticado == null)
+            {
+                throw new ApplicationException("Email ou senha inválidos!");
+            }
+
+            Tools.SessionTools.SalvarUsuarioLogado(usuarioAutenticado);
+
+            NavigationManager.NavigateTo("/home");
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void NavegarParaCadastro()
+    {
+        NavigationManager.NavigateTo("/cadastro");
+    }
+
+
+}

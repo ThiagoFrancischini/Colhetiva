@@ -1,0 +1,125 @@
+.navbar-toggler {
+    appearance: none;
+    cursor: pointer;
+    width: 3.5rem;
+    height: 2.5rem;
+    color: white;
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    z-index: 1000;
+    display: none;
+}
+
+    .navbar-toggler:checked {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+
+.top-row {
+    height: 3.5rem;
+    background: linear-gradient(to right, #C70039, #DA1D69);
+    display: flex;
+    align-items: center;
+    padding-left: 1.5rem;
+    border-bottom: none;
+}
+
+.navbar-brand {
+    font-size: 1.1rem;
+    color: white;
+    font-weight: bold;
+}
+
+.nav-scrollable {
+    background: linear-gradient(to bottom right, #FF5733, #DA1D69, #C70039);
+    height: calc(100vh - 3.5rem);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.nav-item {
+    font-size: 0.9rem;
+    padding-bottom: 0.5rem;
+}
+
+    .nav-item:first-of-type {
+        padding-top: 1rem;
+    }
+
+    .nav-item:last-of-type {
+        padding-bottom: 1rem;
+    }
+
+::deep .nav-link {
+    color: white;
+    opacity: 0.85;
+    border-radius: 4px;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    line-height: 3rem;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+    ::deep .nav-link span {
+        color: white;
+    }
+
+    ::deep .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        opacity: 1;
+        font-weight: bold;
+    }
+
+    ::deep .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        opacity: 1;
+    }
+
+.app-footer-menu {
+    background-color: #FF8C00;
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 500;
+    position: sticky;
+    bottom: 0;
+}   
+
+@media (max-width: 640.98px) {
+    .navbar-toggler {
+        display: block;
+    }
+
+    .nav-scrollable {
+        position: absolute;
+        top: 3.5rem;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 3.5rem);
+        transition: left 0.3s ease-in-out;
+        z-index: 999;
+    }
+
+    .navbar-toggler:checked ~ .nav-scrollable {
+        left: 0;
+    }
+
+    .top-row {
+        padding-left: 0.5rem;
+        justify-content: center;
+    }
+
+    .navbar-brand {
+        text-align: center;
+    }
+
+    .app-footer-menu {
+        text-align: center;
+    }
+}

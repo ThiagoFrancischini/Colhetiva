@@ -7,28 +7,25 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ColhetivaDbContext>(options =>
     options.UseNpgsql(connectionString));
 
- // Register repositories
- builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
- builder.Services.AddScoped<ICidadeRepository, CidadeRepository>();
- builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
- builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
- builder.Services.AddScoped<IUserContextRepository, UserContextRepository>();
- builder.Services.AddScoped<IHortaRepository, HortaRepository>();
- builder.Services.AddScoped<ICanteiroRepository, CanteiroRepository>();
- builder.Services.AddScoped<ISolicitacaoRepository, SolicitacaoRepository>();
- builder.Services.AddScoped<IFerramentaRepository, FerramentaRepository>();
- builder.Services.AddScoped<IEmprestimoRepository, EmprestimoRepository>();
- builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
+builder.Services.AddScoped<ICidadeRepository, CidadeRepository>();
+builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUserContextRepository, UserContextRepository>();
+builder.Services.AddScoped<IHortaRepository, HortaRepository>();
+builder.Services.AddScoped<ICanteiroRepository, CanteiroRepository>();
+builder.Services.AddScoped<ISolicitacaoRepository, SolicitacaoRepository>();
+builder.Services.AddScoped<IFerramentaRepository, FerramentaRepository>();
+builder.Services.AddScoped<IEmprestimoRepository, EmprestimoRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// Register services
 builder.Services.AddScoped<ICidadeService, CidadeService>();
 builder.Services.AddScoped<IEstadoService, EstadoService>();
 builder.Services.AddScoped<IEnderecoService, EnderecoService>();
@@ -41,11 +38,9 @@ builder.Services.AddScoped<IEmprestimoService, EmprestimoService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
@@ -56,7 +51,9 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllers();
-app.MapRazorPages();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Account}/{action=Login}/{id?}"
+);
 
 app.Run();

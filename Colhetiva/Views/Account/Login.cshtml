@@ -1,0 +1,49 @@
+﻿@model Colhetiva.DTOs.UsuarioLoginDto
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div id="s2" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <div>
+        <div class="auth-side-logo">Colhetiva</div>
+        <p class="auth-side-tagline">Conectando cidadãos a espaços de cultivo urbano para uma cidade mais verde e colaborativa.</p>
+      </div>
+      <div class="auth-side-footer">Universidade de Caxias do Sul · Projeto Temático III</div>
+    </div>
+
+    <div class="auth-form">
+
+      <div class="form-title">Entrar</div>
+
+      <form asp-action="Login" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:12px;"></div>
+
+        <div class="field">
+          <label asp-for="Email">E-mail</label>
+          <input asp-for="Email" class="login-input" placeholder="maria@exemplo.com" />
+          <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="field">
+          <label asp-for="Password">Senha</label>
+          <input asp-for="Password" type="password" class="login-input" placeholder="Mínimo 8 caracteres" />
+          <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+          <div class="forgot-password-link"><a href="#" style="color:var(--gray-400);text-decoration:none;">Esqueci minha senha?</a></div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top:12px;">Entrar</button>
+
+        <p class="auth-link">Ainda não tem conta? <a asp-controller="Account" asp-action="Register">Cadastre-se</a></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}       
