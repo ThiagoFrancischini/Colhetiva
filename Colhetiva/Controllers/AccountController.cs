@@ -2,16 +2,22 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Colhetiva.DTOs;
 using Colhetiva.Core.Interfaces.Service;
+using Colhetiva.Infrastructure.Context;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Colhetiva.Core.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Colhetiva.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IUsuarioService _usuarioService;
+        private readonly ColhetivaDbContext _db;
 
-        public AccountController(IUsuarioService usuarioService)
+        public AccountController(IUsuarioService usuarioService, ColhetivaDbContext db)
         {
             _usuarioService = usuarioService;
+            _db = db;
         }
 
         [HttpGet]
@@ -37,7 +43,6 @@ namespace Colhetiva.Controllers
                     return View(model);
                 }
 
-                // Exemplo simples: armazenar identificação em TempData (substitua por autenticação real)
                 TempData["UsuarioNome"] = usuario.Nome ?? usuario.Email;
                 return RedirectToAction("Index", "Home");
             }
@@ -46,6 +51,15 @@ namespace Colhetiva.Controllers
                 ModelState.AddModelError(string.Empty, "Erro ao autenticar. Tente novamente.");
                 return View(model);
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Register()
+        {
+            var cidades = await _db.Cidades.AsNoTracking().OrderBy(c => c.Nome).ToListAsync();
+            ViewBag.Cidades = new SelectList(cidades, "Id", "Nome");
+            var model = new UsuarioCreateDto { Endereco = new EnderecoCreateDto() };
+            return View(model);
         }
 
         public IActionResult Logout()
