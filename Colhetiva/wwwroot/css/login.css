@@ -1,0 +1,181 @@
+﻿:root {
+    --green-dark: #1a3a2a;
+    --green-mid: #2e5e3e;
+    --green-light: #4a9460;
+    --green-soft: #b8d8c0;
+    --green-pale: #edf5ef;
+    --white: #ffffff;
+    --gray-100: #f7f8f6;
+    --gray-200: #e8ece7;
+    --gray-400: #9aaa95;
+    --gray-700: #3d4a3a;
+    --radius-lg: 14px;
+    --shadow-md: 0 12px 40px rgba(20,40,25,.12);
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --text-sm: 13px;
+    --text-md: 16px;
+    --text-lg: 20px;
+    --text-xl: 22px;
+    --text-2xl: 26px;
+    --font-head: 'Playfair Display', serif;
+    --font-body: 'DM Sans', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Base mobile-first: auth empilhada */
+.auth-wrap {
+    width: 100%;
+    max-width: 520px;
+    margin: 24px auto;
+    background: transparent;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: block;
+    padding: 0 12px;
+}
+
+.auth-side {
+    display: none;
+}
+
+.auth-form {
+    width: 100%;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    padding: 28px;
+    margin: 0;
+}
+
+/* Form elements */
+.form-title {
+    font-family: var(--font-head);
+    font-size: var(--text-xl);
+    color: var(--green-dark);
+    margin-bottom: 18px;
+}
+
+.field {
+    margin-bottom: 14px;
+}
+
+    .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+
+.login-input {
+    width: 100%;
+    border-radius: 8px;
+    border: 1.5px solid var(--gray-200);
+    background: var(--gray-100);
+    padding: 10px 12px;
+    color: var(--gray-700);
+}
+
+    .login-input:focus {
+        outline: none;
+        border-color: var(--green-light);
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(34,85,46,.06);
+    }
+
+.btn-primary {
+    width: 100%;
+    background: var(--green-light);
+    color: var(--white);
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Links and helpers */
+.forgot-password-link {
+    text-align: right;
+    font-size: 13px;
+    color: var(--gray-400)
+}
+
+.register-link-section, .auth-link {
+    text-align: center;
+    font-size: 13px;
+    color: var(--gray-400);
+    margin-top: 12px;
+}
+
+    .auth-link a, .register-link-section a {
+        color: var(--green-mid);
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+/* Desktop: show side panel and split layout */
+@media (min-width: 900px) {
+    .auth-wrap {
+        display: flex;
+        max-width: 960px;
+        margin: 36px auto;
+        background: var(--white);
+        box-shadow: var(--shadow-md);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .auth-side {
+        display: flex;
+        width: 340px;
+        flex-shrink: 0;
+        background: var(--green-dark);
+        color: var(--white);
+        padding: var(--space-6);
+        flex-direction: column;
+        justify-content: center;
+        gap: var(--space-3);
+    }
+
+    .auth-side-logo {
+        font-family: var(--font-head);
+        font-size: var(--text-2xl);
+        color: var(--white);
+        margin-bottom: var(--space-2);
+    }
+
+        .auth-side-logo span {
+            color: var(--green-soft);
+        }
+
+    .auth-side-tagline {
+        color: rgba(255,255,255,.85);
+        font-size: var(--text-md);
+        line-height: 1.5;
+    }
+
+    .auth-side-img {
+        font-size: 64px;
+        text-align: center;
+        margin-top: 28px;
+    }
+
+    .auth-side-footer {
+        margin-top: auto;
+        font-size: var(--text-sm);
+        color: rgba(255,255,255,.60);
+    }
+
+    .auth-form {
+        flex: 1;
+        padding: 36px;
+        background: var(--white);
+    }
+}
+

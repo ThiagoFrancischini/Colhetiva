@@ -1,0 +1,14 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1>Bem vindo à Colhetiva</h1>
+
+@if (TempData["UsuarioNome"] != null)
+{
+    <p>Olá, @TempData["UsuarioNome"]!</p>
+}
+else
+{
+    <p>Usuário não autenticado.</p>
+}

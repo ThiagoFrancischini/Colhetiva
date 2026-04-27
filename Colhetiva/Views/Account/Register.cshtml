@@ -1,0 +1,103 @@
+﻿@model Colhetiva.DTOs.UsuarioCreateDto
+@{
+    ViewData["Title"] = "Cadastro";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" />
+}
+
+<div id="s2" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <div>
+        <div class="auth-side-logo">Colhetiva</span></div>
+        <p class="auth-side-tagline">Conectando cidadãos a espaços de cultivo urbano para uma cidade mais verde e colaborativa.</p>
+      </div>
+      <div class="auth-side-footer">Universidade de Caxias do Sul · Projeto Temático III</div>
+    </div>
+
+    <div class="auth-form">
+      <div class="auth-tabs" style="display:none;"></div>
+
+      <div class="form-title">Criar conta</div>
+
+      <!-- mostrar erros de ambos os objetos -->
+      <form asp-action="Register" method="post" novalidate>
+        <div asp-validation-summary="All" class="text-danger" style="margin-bottom:12px;"></div>
+
+        <div class="field-row">
+          <div class="field">
+            <label asp-for="Nome"></label>
+            <input asp-for="Nome" class="login-input" placeholder="Ex.: Maria Souza" />
+            <span asp-validation-for="Nome" class="text-danger"></span>
+          </div>
+          <div class="field">
+            <label asp-for="CPF"></label>
+            <input asp-for="CPF" class="login-input" placeholder="000.000.000-00" />
+            <span asp-validation-for="CPF" class="text-danger"></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label asp-for="Email"></label>
+          <input asp-for="Email" class="login-input" placeholder="maria@exemplo.com" />
+          <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label asp-for="Password"></label>
+            <input asp-for="Password" type="password" class="login-input" placeholder="Mínimo 8 caracteres" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+          </div>
+          <div class="field">
+            <label asp-for="ConfirmPassword"></label>
+            <input asp-for="ConfirmPassword" type="password" class="login-input" placeholder="Repita a senha" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+          </div>
+        </div>
+
+        <hr style="margin:16px 0;border-color:var(--gray-200);" />
+
+        <div class="form-title" style="font-size:16px;margin-bottom:12px;">Endereço</div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="endereco.Cep">CEP</label>
+            <input name="endereco.Cep" class="login-input" placeholder="00000-000" value="@(ViewData.Model?.Endereco?.Cep ?? "")" />
+          </div>
+          <div class="field">
+            <label for="endereco.CidadeId">Cidade</label>
+           
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="endereco.Rua">Rua</label>
+            <input name="endereco.Rua" class="login-input" placeholder="Rua Exemplo, Av. ..." value="@(ViewData.Model?.Endereco?.Rua ?? "")" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="endereco.Bairro">Bairro</label>
+            <input name="endereco.Bairro" class="login-input" placeholder="Bairro" value="@(ViewData.Model?.Endereco?.Bairro ?? "")" />
+
+          </div>
+          <div class="field">
+            <label for="endereco.Numero">Número</label>
+            <input name="endereco.Numero" class="login-input" placeholder="Bairro" value="@(ViewData.Model?.Endereco?.Numero ?? "")" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="endereco.Complemento">Complemento</label>
+        <input name="endereco.Complemento" class="login-input" placeholder="Bairro" value="@(ViewData.Model?.Endereco?.Complemento ?? "")" />
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top:8px;">Criar Conta</button>
+        <p class="auth-link">Já tem conta? <a asp-controller="Account" asp-action="Login">Faça login</a></p>
+      </form>
+    </div>
+  </div>
+</div>

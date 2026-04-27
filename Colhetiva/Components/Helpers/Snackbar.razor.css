@@ -1,0 +1,40 @@
+﻿.snackbar-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s, transform 0.5s;
+    transform: translateY(100%);
+    pointer-events: none; /* Não bloqueia cliques quando escondido */
+}
+
+    /* Classe para exibir (move para a tela e torna opaco) */
+    .snackbar-container.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+/* Estilo do conteúdo da mensagem */
+.snackbar-content {
+    min-width: 250px;
+    max-width: 400px;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+}
+
+    .snackbar-content.success {
+        background-color: #4CAF50; 
+    }
+
+    .snackbar-content.error {
+        background-color: #f44336; 
+    }
+
+    .snackbar-content.warning {
+        background-color: #ff9800; 
+    }
