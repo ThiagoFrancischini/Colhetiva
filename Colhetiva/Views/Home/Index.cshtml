@@ -1,14 +1,15 @@
 @{
     ViewData["Title"] = "Home";
+    var nomeUsuario = Context.Session.GetString("UsuarioNome");
 }
 
-<h1>Bem vindo ‡ Colhetiva</h1>
+<h1>Bem vindo √† Colhetiva</h1>
 
-@if (TempData["UsuarioNome"] != null)
+@if (!string.IsNullOrEmpty(nomeUsuario))
 {
-    <p>Ol·, @TempData["UsuarioNome"]!</p>
+    <p>Ol√°, @nomeUsuario!</p>
 }
 else
 {
-    <p>Usu·rio n„o autenticado.</p>
+    <p>Usu√°rio n√£o autenticado.</p>
 }

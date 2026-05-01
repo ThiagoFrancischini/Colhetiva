@@ -1,0 +1,100 @@
+@model Colhetiva.DTOs.ProfileViewDto
+@{
+    ViewData["Title"] = "Meu Perfil";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" />
+}
+
+<div id="s2" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <div>
+        <div class="auth-side-logo">Colhetiva</div>
+        <p class="auth-side-tagline">Gerencie suas informações pessoais e endereço.</p>
+      </div>
+      <div class="auth-side-footer">Universidade de Caxias do Sul · Projeto Temático III</div>
+    </div>
+
+    <div class="auth-form">
+      <div class="form-title">Meu Perfil</div>
+      
+      @if (TempData["MensagemSucesso"] != null)
+      {
+          <div class="alert alert-success" style="margin-bottom:12px;">
+              @TempData["MensagemSucesso"]
+          </div>
+      }
+      
+      <div asp-validation-summary="All" class="text-danger" style="margin-bottom:12px;"></div>
+
+      <form asp-action="Index" method="post">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Email" />
+        <input type="hidden" asp-for="Role" />
+        
+        <div class="form-title" style="font-size:16px;margin-bottom:12px;">Dados Pessoais</div>
+        
+        <div class="field-row">
+          <div class="field">
+            <label asp-for="Nome"></label>
+            <input asp-for="Nome" class="login-input" />
+            <span asp-validation-for="Nome" class="text-danger"></span>
+          </div>
+          @if (Model.Role != "ADMIN")
+          {
+              <div class="field">
+                <label asp-for="CPF"></label>
+                <input asp-for="CPF" class="login-input" readonly />
+              </div>
+          }
+        </div>
+
+        <hr style="margin:16px 0;border-color:var(--gray-200);" />
+
+        <div class="form-title" style="font-size:16px;margin-bottom:12px;">Endereço</div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="Endereco.Cep">CEP</label>
+            <input asp-for="Endereco.Cep" class="login-input" placeholder="00000-000" />
+          </div>
+          <div class="field">
+            <label for="Endereco.CidadeId">Cidade</label>
+            <input type="hidden" asp-for="Endereco.CidadeId" id="CidadeId_Hidden" />
+            <select id="CidadeId_Select" class="login-input" onchange="document.getElementById('CidadeId_Hidden').value = this.value">
+                <option value="">Selecione...</option>
+                @foreach (var cidade in ViewBag.Cidades)
+                {
+                    <option value="@cidade.Value" selected="@(Model.Endereco.CidadeId.ToString() == cidade.Value ? "selected" : null)">@cidade.Text</option>
+                }
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="Endereco.Rua">Rua</label>
+            <input asp-for="Endereco.Rua" class="login-input" placeholder="Rua Exemplo" />
+          </div>
+          <div class="field">
+            <label for="Endereco.Numero">Número</label>
+            <input asp-for="Endereco.Numero" class="login-input" placeholder="123" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="Endereco.Bairro">Bairro</label>
+          <input asp-for="Endereco.Bairro" class="login-input" placeholder="Bairro" />
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top:8px;">Salvar Alterações</button>
+        
+        <p class="auth-link" style="margin-top:16px;">
+            <a href="@Url.Action("Index", "Home")">Voltar para Home</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>

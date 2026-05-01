@@ -34,7 +34,7 @@
           </div>
           <div class="field">
             <label asp-for="CPF"></label>
-            <input asp-for="CPF" class="login-input" placeholder="000.000.000-00" />
+            <input asp-for="CPF" id="CPF" class="login-input" placeholder="000.000.000-00" />
             <span asp-validation-for="CPF" class="text-danger"></span>
           </div>
         </div>
@@ -69,7 +69,14 @@
           </div>
           <div class="field">
             <label for="endereco.CidadeId">Cidade</label>
-           
+            <input type="hidden" name="Endereco.CidadeId" id="CidadeId_Hidden" value="@(Model?.Endereco?.CidadeId.ToString() ?? "")" />
+            <select id="CidadeId_Select" class="login-input" onchange="document.getElementById('CidadeId_Hidden').value = this.value">
+                <option value="">Selecione...</option>
+                @foreach (var cidade in ViewBag.Cidades)
+                {
+                    <option value="@cidade.Value" selected="@(Model?.Endereco?.CidadeId.ToString() == cidade.Value ? "selected" : null)">@cidade.Text</option>
+                }
+            </select>
           </div>
         </div>
 
@@ -96,7 +103,16 @@
         </div>
 
         <button type="submit" class="btn-primary" style="margin-top:8px;">Criar Conta</button>
-        <p class="auth-link">Já tem conta? <a asp-controller="Account" asp-action="Login">Faça login</a></p>
+        
+        <div style="text-align:center; margin: 16px 0;">
+            <span style="color: var(--gray-500);">ou</span>
+        </div>
+        
+        <a asp-controller="Account" asp-action="RegisterOrganization" style="display:block; text-align:center; padding:12px; border-radius:6px; text-decoration:none; background: #2e7d32; color: white; font-weight: 500;">
+            Cadastrar Organização
+        </a>
+        
+        <p class="auth-link" style="margin-top:16px;">Já tem conta? <a asp-controller="Account" asp-action="Login">Faça login</a></p>
       </form>
     </div>
   </div>

@@ -10,6 +10,8 @@ public class EnderecoDto
     public string Numero { get; set; } = string.Empty;
     public string Bairro { get; set; } = string.Empty;
     public Guid CidadeId { get; set; }
+    public string CidadeNome { get; set; } = string.Empty;
+    public string EstadoNome { get; set; } = string.Empty;
 }
 
 public class EnderecoCreateDto
@@ -26,7 +28,7 @@ public class EnderecoCreateDto
     [Display(Name = "Bairro")]
     public string Bairro { get; set; } = string.Empty;
 
-    [Display(Name = "Número")]
+    [Display(Name = "Nï¿½mero")]
     public string? Numero { get; set; }
 
     [Display(Name = "Complemento")]
