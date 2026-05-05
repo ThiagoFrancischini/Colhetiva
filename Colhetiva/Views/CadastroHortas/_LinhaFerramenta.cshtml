@@ -1,0 +1,26 @@
+@model FerramentaLinhaEditorModel
+<tr data-ferramenta-row>
+    <td>
+        <input type="hidden" name="Ferramentas[@Model.Index].Id" value="@Model.Linha.Id" />
+        <input type="text" name="Ferramentas[@Model.Index].Nome" value="@Model.Linha.Nome" class="form-control form-control-sm" placeholder="Nome" />
+    </td>
+    <td>
+        <select name="Ferramentas[@Model.Index].Status" class="form-select form-select-sm">
+            @foreach (StatusFerramenta s in Enum.GetValues<StatusFerramenta>())
+            {
+                if (Model.Linha.Status == s)
+                {
+                    <option value="@((int)s)" selected="selected">@s</option>
+                }
+                else
+                {
+                    <option value="@((int)s)">@s</option>
+                }
+            }
+        </select>
+    </td>
+    <td class="text-center">
+        <input type="hidden" name="Ferramentas[@Model.Index].Remover" value="false" />
+        <input type="checkbox" name="Ferramentas[@Model.Index].Remover" value="true" class="form-check-input" title="Remover" @(Model.Linha.Remover ? "checked" : null) />
+    </td>
+</tr>

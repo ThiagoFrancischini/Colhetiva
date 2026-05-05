@@ -43,5 +43,14 @@ namespace Colhetiva.Infrastructure.Repositories
                 _context.Entry(existingFerramenta).CurrentValues.SetValues(ferramenta);
             }
         }
+
+        public async Task Excluir(Guid id)
+        {
+            var ferramenta = await _context.Ferramentas.FindAsync(id);
+            if (ferramenta != null)
+            {
+                _context.Ferramentas.Remove(ferramenta);
+            }
+        }
     }
 }

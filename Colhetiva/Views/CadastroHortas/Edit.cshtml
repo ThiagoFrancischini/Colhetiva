@@ -1,0 +1,149 @@
+@model HortaCadastroViewModel
+@{
+    ViewData["Title"] = "Editar horta";
+}
+
+<h1 class="h4 mb-3 ps-3">Editar horta</h1>
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" id="formHorta">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Endereco.Id" />
+    <input type="hidden" asp-for="Endereco.Latitude" />
+    <input type="hidden" asp-for="Endereco.Longitude" />
+
+    <div class="card mb-3">
+        <div class="card-header px-4 py-3 fw-semibold">Dados da horta</div>
+        <div class="card-body row g-3 px-4">
+            <div class="col-md-6">
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" />
+                <span asp-validation-for="Nome" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="UsuarioId" class="form-label"></label>
+                <select asp-for="UsuarioId" asp-items="ViewBag.Usuarios" class="form-select">
+                    <option value="">Selecione...</option>
+                </select>
+                <span asp-validation-for="UsuarioId" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Regras" class="form-label"></label>
+                <textarea asp-for="Regras" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header px-4 py-3 fw-semibold">Endereço da horta</div>
+        <div class="card-body row g-3 px-4">
+            <div class="col-md-3">
+                <label asp-for="Endereco.Cep" class="form-label"></label>
+                <input asp-for="Endereco.Cep" class="form-control" placeholder="00000000" />
+                <span asp-validation-for="Endereco.Cep" class="text-danger"></span>
+            </div>
+            <div class="col-md-5">
+                <label asp-for="Endereco.CidadeId" class="form-label"></label>
+                <select asp-for="Endereco.CidadeId" asp-items="ViewBag.Cidades" class="form-select">
+                    <option value="">Selecione...</option>
+                </select>
+                <span asp-validation-for="Endereco.CidadeId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Endereco.Rua" class="form-label"></label>
+                <input asp-for="Endereco.Rua" class="form-control" />
+                <span asp-validation-for="Endereco.Rua" class="text-danger"></span>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Endereco.Numero" class="form-label"></label>
+                <input asp-for="Endereco.Numero" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Endereco.Bairro" class="form-label"></label>
+                <input asp-for="Endereco.Bairro" class="form-control" />
+                <span asp-validation-for="Endereco.Bairro" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Endereco.Complemento" class="form-label"></label>
+                <input asp-for="Endereco.Complemento" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center px-4 py-3 fw-semibold">
+            <span>Canteiros</span>
+            <button type="button" class="btn btn-sm btn-outline-success" id="btnAddCanteiro">Adicionar canteiro</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Identificação</th>
+                        <th>Dimensões</th>
+                        <th>Status</th>
+                        <th style="width: 70px;">Remover</th>
+                    </tr>
+                </thead>
+                <tbody id="canteirosBody">
+                    @for (var i = 0; i < Model.Canteiros.Count; i++)
+                    {
+                        @await Html.PartialAsync("_LinhaCanteiro", new CanteiroLinhaEditorModel { Index = i, Linha = Model.Canteiros[i] })
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center px-4 py-3 fw-semibold">
+            <span>Ferramentas</span>
+            <button type="button" class="btn btn-sm btn-outline-success" id="btnAddFerramenta">Adicionar ferramenta</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Status</th>
+                        <th style="width: 70px;">Remover</th>
+                    </tr>
+                </thead>
+                <tbody id="ferramentasBody">
+                    @for (var i = 0; i < Model.Ferramentas.Count; i++)
+                    {
+                        @await Html.PartialAsync("_LinhaFerramenta", new FerramentaLinhaEditorModel { Index = i, Linha = Model.Ferramentas[i] })
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Voltar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            let cIx = @Model.Canteiros.Count;
+            let fIx = @Model.Ferramentas.Count;
+            const urlC = @Html.Raw(Json.Serialize(Url.Action("NovoCanteiroLinha", "CadastroHortas")));
+            const urlF = @Html.Raw(Json.Serialize(Url.Action("NovoFerramentaLinha", "CadastroHortas")));
+
+            document.getElementById('btnAddCanteiro').addEventListener('click', async function () {
+                const res = await fetch(urlC + '?i=' + cIx);
+                const html = await res.text();
+                document.getElementById('canteirosBody').insertAdjacentHTML('beforeend', html);
+                cIx++;
+            });
+            document.getElementById('btnAddFerramenta').addEventListener('click', async function () {
+                const res = await fetch(urlF + '?i=' + fIx);
+                const html = await res.text();
+                document.getElementById('ferramentasBody').insertAdjacentHTML('beforeend', html);
+                fIx++;
+            });
+        })();
+    </script>
+}
