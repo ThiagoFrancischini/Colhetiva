@@ -38,11 +38,21 @@ namespace Colhetiva.Infrastructure.Repositories
 
             if (existingEndereco == null)
             {
+                endereco.Cidade = null;
                 await _context.Enderecos.AddAsync(endereco);
             }
             else
             {
                 _context.Entry(existingEndereco).CurrentValues.SetValues(endereco);
+            }
+        }
+
+        public async Task Excluir(Guid id)
+        {
+            var endereco = await _context.Enderecos.FindAsync(id);
+            if (endereco != null)
+            {
+                _context.Enderecos.Remove(endereco);
             }
         }
     }

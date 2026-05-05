@@ -1,0 +1,14 @@
+@model Horta
+@{
+    ViewData["Title"] = "Excluir horta";
+}
+
+<h1 class="h4 mb-3">Excluir horta</h1>
+<p>Tem certeza que deseja excluir a horta <strong>@Model.Nome</strong>? Canteiros, ferramentas e o endereço vinculados serão removidos.</p>
+
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Excluir</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+</form>

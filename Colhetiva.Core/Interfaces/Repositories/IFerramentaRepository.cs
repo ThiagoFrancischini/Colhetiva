@@ -10,5 +10,6 @@ namespace Colhetiva.Core.Interfaces.Repositories
         Task<List<Ferramenta>> GetFerramentas();
         Task Salvar(Ferramenta ferramenta);
         Task<Ferramenta?> GetById(Guid id);
+        Task Excluir(Guid id);
     }
 }

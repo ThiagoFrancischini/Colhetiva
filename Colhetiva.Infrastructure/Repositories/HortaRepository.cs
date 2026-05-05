@@ -18,6 +18,7 @@ namespace Colhetiva.Infrastructure.Repositories
             return await _context
                 .Hortas
                 .Include(h => h.Endereco)
+                    .ThenInclude(e => e.Cidade)
                 .Include(h => h.Usuario)
                 .Include(h => h.Canteiros)
                 .Include(h => h.Ferramentas)
@@ -30,10 +31,20 @@ namespace Colhetiva.Infrastructure.Repositories
             return await _context.Hortas
                 .AsNoTracking()
                 .Include(h => h.Endereco)
+                    .ThenInclude(e => e.Cidade)
                 .Include(h => h.Usuario)
                 .Include(h => h.Canteiros)
                 .Include(h => h.Ferramentas)
                 .FirstOrDefaultAsync(h => h.Id == id);
+        }
+
+        public async Task Excluir(Guid id)
+        {
+            var horta = await _context.Hortas.FindAsync(id);
+            if (horta != null)
+            {
+                _context.Hortas.Remove(horta);
+            }
         }
 
         public async Task Salvar(Horta horta)

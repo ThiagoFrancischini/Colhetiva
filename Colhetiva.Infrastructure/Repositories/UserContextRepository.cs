@@ -44,5 +44,16 @@ namespace Colhetiva.Infrastructure.Repositories
                 _context.Set<UserContext>().Remove(userContext);
             }
         }
+
+        public async Task DesvincularHortaAsync(Guid hortaId)
+        {
+            var contexts = await _context.Set<UserContext>()
+                .Where(uc => uc.HortaId == hortaId)
+                .ToListAsync();
+            foreach (var uc in contexts)
+            {
+                uc.HortaId = null;
+            }
+        }
     }
 }

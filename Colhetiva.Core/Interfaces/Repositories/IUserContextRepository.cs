@@ -11,5 +11,6 @@ namespace Colhetiva.Core.Interfaces.Repositories
         Task AddAsync(UserContext userContext);
         Task UpdateAsync(UserContext userContext);
         Task RemoveAsync(Guid id);
+        Task DesvincularHortaAsync(Guid hortaId);
     }
 }

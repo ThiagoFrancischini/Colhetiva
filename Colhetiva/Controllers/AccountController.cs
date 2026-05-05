@@ -228,7 +228,7 @@ namespace Colhetiva.Controllers
                     Endereco = endereco
                 };
 
-                await _usuarioService.Salvar(usuario, Role.ADMIN);
+                await _usuarioService.Salvar(usuario);
 
                 TempData["MensagemSucesso"] = "Organização cadastrada com sucesso! Faça login para acessar o painel administrativo.";
                 return RedirectToAction("Login");
