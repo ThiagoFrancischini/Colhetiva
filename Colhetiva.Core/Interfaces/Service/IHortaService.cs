@@ -14,5 +14,6 @@ namespace Colhetiva.Core.Interfaces.Service
         Task<Horta> CriarCompletoAsync(HortaCadastroInput input);
         Task AtualizarCompletoAsync(HortaCadastroInput input);
         Task ExcluirAsync(Guid id);
+        Task<List<Horta>> FiltrarAsync(string? nome, string? cidade);
     }
 }

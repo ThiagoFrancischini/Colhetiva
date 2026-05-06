@@ -213,5 +213,28 @@ namespace Colhetiva.Core.Services
             await _unitOfWork.EnderecoRepository.Excluir(enderecoId);
             await _unitOfWork.CompleteAsync();
         }
+
+        public async Task<List<Horta>> FiltrarAsync(string? nome, string? cidade)
+        {
+            var hortas = await _unitOfWork.HortaRepository.GetHortas();
+
+            if (!string.IsNullOrWhiteSpace(nome))
+            {
+                hortas = hortas
+                    .Where(h => h.Nome != null && h.Nome.ToLower().Contains(nome.ToLower()))
+                    .ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(cidade))
+            {
+                hortas = hortas
+                    .Where(h => h.Endereco != null
+                             && h.Endereco.Cidade != null
+                             && h.Endereco.Cidade.Nome.ToLower().Contains(cidade.ToLower()))
+                    .ToList();
+            }
+
+            return hortas;
+        }
     }
 }
