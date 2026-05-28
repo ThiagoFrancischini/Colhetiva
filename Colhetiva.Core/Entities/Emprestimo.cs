@@ -6,13 +6,11 @@ namespace Colhetiva.Core.Entities
     {
         public Guid Id { get; set; }
         public DateTime DataRetirada { get; set; } = DateTime.UtcNow;
-        public DateTime? DataDevolucao { get; set; } // anulável
+        public DateTime? DataDevolucao { get; set; }
         
-        // Relacionamento com Usuario (voluntário)
         public Guid UsuarioId { get; set; }
         public Usuario Usuario { get; set; } = null!;
         
-        // Relacionamento com Ferramenta
         public Guid FerramentaId { get; set; }
         public Ferramenta Ferramenta { get; set; } = null!;
     }

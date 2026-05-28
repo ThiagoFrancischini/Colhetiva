@@ -120,7 +120,6 @@ namespace Colhetiva.Core.Services
 
         private bool IsValidEmail(string email)
         {
-            // Expressão regular básica para validação de email
             var pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
             return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
         }

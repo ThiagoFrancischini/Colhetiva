@@ -1,0 +1,61 @@
+﻿@model List<Colhetiva.Core.Entities.Solicitacao>
+@{
+    ViewData["Title"] = "Gerenciar Solicitações";
+}
+
+<h2>Solicitações pendentes</h2>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["MensagemSucesso"]</div>
+}
+@if (TempData["MensagemInfo"] != null)
+{
+    <div class="alert alert-info">@TempData["MensagemInfo"]</div>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger">@TempData["MensagemErro"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-secondary">Nenhuma solicitação pendente para suas hortas.</div>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Horta</th>
+                <th>Canteiro</th>
+                <th>Solicitante</th>
+                <th>Data</th>
+                <th style="width:200px;text-align:center;">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model)
+            {
+                <tr>
+                    <td>@s.Canteiro.Horta?.Nome</td>
+                    <td>@s.Canteiro.Identificacao</td>
+                    <td>@s.Usuario?.Nome</td>
+                    <td>@s.DataPedido.ToLocalTime().ToString("g")</td>
+                    <td class="text-center">
+                        <form asp-action="Aprovar" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="solicitacaoId" value="@s.Id" />
+                            <button type="submit" class="btn btn-success btn-sm">Aprovar</button>
+                        </form>
+                        <form asp-action="Reprovar" method="post" class="d-inline ms-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="solicitacaoId" value="@s.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Reprovar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
