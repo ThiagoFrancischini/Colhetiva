@@ -153,23 +153,24 @@ namespace Colhetiva.Infrastructure.Context
                        .IsRequired();
              });
 
-             modelBuilder.Entity<Emprestimo>(entity =>
-             {
-                 entity.HasKey(e => e.Id);
- 
-                 entity.Property(e => e.DataRetirada).IsRequired();
-                 entity.Property(e => e.DataDevolucao).IsRequired(false);
- 
-                 entity.HasOne(e => e.Usuario)
-                       .WithMany()
-                       .HasForeignKey(e => e.UsuarioId)
-                       .IsRequired();
- 
-                 entity.HasOne(e => e.Ferramenta)
-                       .WithMany()
-                       .HasForeignKey(e => e.FerramentaId)
-                       .IsRequired();
-             });
+            modelBuilder.Entity<Emprestimo>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.DataRetirada).IsRequired();
+                entity.Property(e => e.DataDevolucao).IsRequired(false);
+                entity.Property(e => e.Status).IsRequired();
+
+                entity.HasOne(e => e.Usuario)
+                      .WithMany()
+                      .HasForeignKey(e => e.UsuarioId)
+                      .IsRequired();
+
+                entity.HasOne(e => e.Ferramenta)
+                      .WithMany()
+                      .HasForeignKey(e => e.FerramentaId)
+                      .IsRequired();
+            });
          }
     }
 }
