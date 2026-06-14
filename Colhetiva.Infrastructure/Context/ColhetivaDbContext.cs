@@ -34,7 +34,7 @@ namespace Colhetiva.Infrastructure.Context
                 entity.HasKey(u => u.Id);
 
                 entity.Property(u => u.Nome).IsRequired().HasMaxLength(150);
-                entity.Property(u => u.CPF).IsRequired().HasMaxLength(11);
+                entity.Property(u => u.CPF).HasMaxLength(11);
                 entity.Property(u => u.Email).IsRequired().HasMaxLength(100);
 
                 entity.HasOne(u => u.Endereco)

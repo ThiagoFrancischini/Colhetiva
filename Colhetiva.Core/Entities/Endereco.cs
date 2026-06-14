@@ -18,6 +18,6 @@ namespace Colhetiva.Core.Entities
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
         public Guid CidadeId { get; set; }
-        public Cidade Cidade { get; set; } = new Cidade();
+        public Cidade? Cidade { get; set; }
     }
 }

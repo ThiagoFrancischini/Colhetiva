@@ -46,7 +46,12 @@ namespace Colhetiva.Core.Services
 
         public async Task<Usuario> Salvar(Usuario usuario)
         {
-            ValidarUsuarioParaInsercao(usuario);
+            return await Salvar(usuario, Role.PARTICIPANT);
+        }
+
+        public async Task<Usuario> Salvar(Usuario usuario, Role roleInicial)
+        {
+            ValidarUsuarioParaInsercao(usuario, roleInicial);
 
             var usuarioExistente = await _unitOfWork.UsuarioRepository.GetByEmail(usuario.Email);
             if (usuarioExistente != null && usuarioExistente.Id != usuario.Id)
@@ -65,9 +70,32 @@ namespace Colhetiva.Core.Services
             {
                 Id = Guid.NewGuid(),
                 UsuarioId = usuario.Id,
-                Role = Role.PARTICIPANT
+                Role = roleInicial
             });
 
+            await _unitOfWork.CompleteAsync();
+            
+            return usuario;
+        }
+
+        public async Task<Usuario> Atualizar(Usuario usuario)
+        {
+            if (usuario == null)
+                throw new ArgumentNullException(nameof(usuario));
+
+            if (string.IsNullOrWhiteSpace(usuario.Nome))
+                throw new ArgumentException("Nome é obrigatório", nameof(usuario.Nome));
+
+            if (string.IsNullOrWhiteSpace(usuario.Email))
+                throw new ArgumentException("Email é obrigatório", nameof(usuario.Email));
+
+            // Check if email is being used by another user
+            var usuarioExistente = await _unitOfWork.UsuarioRepository.GetByEmail(usuario.Email);
+            if (usuarioExistente != null && usuarioExistente.Id != usuario.Id)
+                throw new InvalidOperationException("Email já está em uso por outro usuário");
+
+            // Entity is already tracked by context (loaded in controller)
+            // Just save changes
             await _unitOfWork.CompleteAsync();
             
             return usuario;
@@ -78,7 +106,7 @@ namespace Colhetiva.Core.Services
             return await _unitOfWork.UsuarioRepository.GetAll();
         }
 
-        private void ValidarUsuarioParaInsercao(Usuario usuario)
+        private void ValidarUsuarioParaInsercao(Usuario usuario, Role role = Role.PARTICIPANT)
         {
             if (usuario == null)
                 throw new ArgumentNullException(nameof(usuario));
@@ -89,15 +117,18 @@ namespace Colhetiva.Core.Services
             if (usuario.Nome.Length > 150)
                 throw new ArgumentException("Nome deve ter no máximo 150 caracteres", nameof(usuario.Nome));
 
-            if (string.IsNullOrWhiteSpace(usuario.CPF))
+            if (role != Role.ADMIN && string.IsNullOrWhiteSpace(usuario.CPF))
                 throw new ArgumentException("CPF é obrigatório", nameof(usuario.CPF));
 
-            var cpfNumerico = new string(usuario.CPF.Where(char.IsDigit).ToArray());
-            if (cpfNumerico.Length != 11)
-                throw new ArgumentException("CPF deve conter exatamente 11 dígitos", nameof(usuario.CPF));
+            if (role != Role.ADMIN && !string.IsNullOrWhiteSpace(usuario.CPF))
+            {
+                var cpfNumerico = new string(usuario.CPF.Where(char.IsDigit).ToArray());
+                if (cpfNumerico.Length != 11)
+                    throw new ArgumentException("CPF deve conter exatamente 11 dígitos", nameof(usuario.CPF));
 
-            if (cpfNumerico.All(c => c == cpfNumerico[0]))
-                throw new ArgumentException("CPF inválido", nameof(usuario.CPF));
+                if (cpfNumerico.All(c => c == cpfNumerico[0]))
+                    throw new ArgumentException("CPF inválido", nameof(usuario.CPF));
+            }
 
             if (string.IsNullOrWhiteSpace(usuario.Email))
                 throw new ArgumentException("Email é obrigatório", nameof(usuario.Email));
