@@ -9,10 +9,8 @@ namespace Colhetiva.Core.Entities
         public Guid UsuarioId { get; set; }
         public Usuario Usuario { get; set; } = null!;
         public Role Role { get; set; }
-        // Propriedade escalar para HortaId
         public Guid? HortaId { get; set; }
 
-        // Navigation property para a entidade Horta
         public Horta? Horta { get; set; }
     }
 }

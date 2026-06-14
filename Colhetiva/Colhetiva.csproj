@@ -8,9 +8,13 @@
 
   <ItemGroup>
     <Compile Remove="Components\**" />
+    <Compile Remove="Views\NovaPasta1\**" />
     <Content Remove="Components\**" />
+    <Content Remove="Views\NovaPasta1\**" />
     <EmbeddedResource Remove="Components\**" />
+    <EmbeddedResource Remove="Views\NovaPasta1\**" />
     <None Remove="Components\**" />
+    <None Remove="Views\NovaPasta1\**" />
   </ItemGroup>
 
   <ItemGroup>

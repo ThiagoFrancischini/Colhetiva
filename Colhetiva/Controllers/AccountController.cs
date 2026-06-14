@@ -49,16 +49,13 @@ namespace Colhetiva.Controllers
                     return View(model);
                 }
 
-                // Buscar a role do usuário
                 var userContexts = await _db.UserContexts.Where(uc => uc.UsuarioId == usuario.Id).ToListAsync();
                 var role = userContexts.FirstOrDefault()?.Role ?? Role.PARTICIPANT;
 
-                // Armazenar na Session
                 HttpContext.Session.SetString("UsuarioNome", usuario.Nome ?? usuario.Email);
                 HttpContext.Session.SetString("UsuarioId", usuario.Id.ToString());
                 HttpContext.Session.SetString("UsuarioRole", role.ToString());
 
-                // Também manter no TempData para compatibilidade
                 TempData["UsuarioNome"] = usuario.Nome ?? usuario.Email;
                 TempData["UsuarioId"] = usuario.Id.ToString();
                 TempData["UsuarioRole"] = role.ToString();
@@ -91,7 +88,6 @@ namespace Colhetiva.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Limpar máscaras (backup se o JS não funcionar)
             if (model.Endereco != null)
             {
                 model.Endereco.Cep = new string(model.Endereco.Cep?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
@@ -108,7 +104,6 @@ namespace Colhetiva.Controllers
                 }
             }
             
-            // Limpar máscara do CPF
             if (!string.IsNullOrEmpty(model.CPF))
             {
                 model.CPF = new string(model.CPF.Where(char.IsDigit).ToArray());
@@ -174,7 +169,6 @@ namespace Colhetiva.Controllers
             var cidades = await _db.Cidades.AsNoTracking().OrderBy(c => c.Nome).ToListAsync();
             ViewBag.Cidades = new SelectList(cidades, "Id", "Nome");
 
-            // DEBUG: Log dos valores recebidos
             System.Diagnostics.Debug.WriteLine($"=== DEBUG REGISTER ORGANIZATION ===");
             System.Diagnostics.Debug.WriteLine($"Nome: {model.Nome}");
             System.Diagnostics.Debug.WriteLine($"Email: {model.Email}");
@@ -186,14 +180,12 @@ namespace Colhetiva.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Se veio vazio, não deixa passar
             if (model.Endereco == null || model.Endereco.CidadeId == Guid.Empty)
             {
                 ModelState.AddModelError(string.Empty, "Cidade não foi selecionada corretamente. Por favor, selecione uma cidade.");
                 return View(model);
             }
 
-            // Limpar máscaras (backup se o JS não funcionar)
             model.Endereco.Cep = new string(model.Endereco.Cep?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
             if (model.Endereco.Cep.Length != 8)
             {

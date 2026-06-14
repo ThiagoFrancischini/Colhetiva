@@ -1,23 +1,7 @@
-﻿/*
-  ============================================================
-  HORTAS COMUNITÁRIAS — CSS v2 (Acessibilidade / Idosos)
-  ============================================================
-  Princípios aplicados:
-  · Tipografia grande (base 18px) e legível (DM Sans)
-  · Alto contraste em todos os pares de cor (mínimo WCAG AA)
-  · Alvos de toque/clique generosos (mínimo 48 × 48 px)
-  · Espaçamentos largos — menos informação por área
-  · Bordas e separadores visíveis para orientação visual
-  · Cores distintas para cada estado de status (não só cor)
-  · Foco visível e indicado claramente para navegação por teclado
-  · Sem animações excessivas ou elementos que piscam
-  ============================================================
-*/
+﻿
 
-/* ── IMPORTAÇÕES ── */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
 
-/* ── VARIÁVEIS ── */
 :root {
     /* Paleta principal — tons de verde terroso com alto contraste */
     --green-dark: #1b3d2b; /* navbar, sidebar, textos escuros */

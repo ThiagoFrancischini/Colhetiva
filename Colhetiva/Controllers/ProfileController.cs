@@ -48,7 +48,6 @@ namespace Colhetiva.Controllers
             var userContexts = await _db.UserContexts.Where(uc => uc.UsuarioId == usuarioId).ToListAsync();
             var role = userContexts.FirstOrDefault()?.Role.ToString() ?? "PARTICIPANT";
 
-            // Load cidades for dropdown
             var cidades = await _db.Cidades.ToListAsync();
             ViewBag.Cidades = new SelectList(cidades, "Id", "Nome", usuario.Endereco?.CidadeId);
 
@@ -104,7 +103,6 @@ namespace Colhetiva.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Remove CPF validation if not needed (e.g., for organizations)
             var userContexts = await _db.UserContexts.Where(uc => uc.UsuarioId == usuarioId).ToListAsync();
             var role = userContexts.FirstOrDefault()?.Role.ToString() ?? "PARTICIPANT";
             
@@ -113,13 +111,11 @@ namespace Colhetiva.Controllers
                 ModelState.Remove("CPF");
             }
 
-            // Load cidades for dropdown
             var cidades = await _db.Cidades.ToListAsync();
             ViewBag.Cidades = new SelectList(cidades, "Id", "Nome", model.Endereco?.CidadeId);
 
             if (!ModelState.IsValid)
             {
-                // Reconstruir ProfileViewDto para a view
                 var viewModel = new ProfileViewDto
                 {
                     Id = usuario.Id,
@@ -148,18 +144,14 @@ namespace Colhetiva.Controllers
 
             try
             {
-                // Atualizar dados do usuário
                 usuario.Nome = model.Nome;
                 
-                // Atualizar endereço
                 if (usuario.Endereco != null && model.Endereco != null)
                 {
-                    // Limpar máscara do CEP (remover hífen)
                     var cepLimpo = new string(model.Endereco.Cep?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
                     if (cepLimpo.Length != 8)
                     {
                         ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 dígitos.");
-                        // Reconstruir viewModel e retornar
                         var viewModel = new ProfileViewDto
                         {
                             Id = usuario.Id,
@@ -192,7 +184,6 @@ namespace Colhetiva.Controllers
                     usuario.Endereco.CidadeId = model.Endereco.CidadeId;
                 }
                 
-                // Salvar usando o mesmo contexto que carregou a entidade
                 await _db.SaveChangesAsync();
 
                 TempData["MensagemSucesso"] = "Perfil atualizado com sucesso!";
@@ -200,10 +191,8 @@ namespace Colhetiva.Controllers
             }
             catch (Exception ex)
             {
-                // Log full exception chain for debugging
                 ModelState.AddModelError(string.Empty, $"Erro ao atualizar perfil: {ex}");
                 
-                // Reconstruir ProfileViewDto para a view em caso de erro
                 var viewModel = new ProfileViewDto
                 {
                     Id = usuario.Id,
