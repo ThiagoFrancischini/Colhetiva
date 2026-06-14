@@ -10,5 +10,6 @@ namespace Colhetiva.Core.Interfaces.Repositories
         Task<List<Horta>> GetHortas();
         Task Salvar(Horta horta);
         Task<Horta?> GetById(Guid id);
+        Task Excluir(Guid id);
     }
 }

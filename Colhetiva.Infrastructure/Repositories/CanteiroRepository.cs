@@ -45,5 +45,14 @@ namespace Colhetiva.Infrastructure.Repositories
                 _context.Entry(existingCanteiro).CurrentValues.SetValues(canteiro);
             }
         }
+
+        public async Task Excluir(Guid id)
+        {
+            var canteiro = await _context.Canteiros.FindAsync(id);
+            if (canteiro != null)
+            {
+                _context.Canteiros.Remove(canteiro);
+            }
+        }
     }
 }

@@ -12,5 +12,6 @@ namespace Colhetiva.Core.Interfaces.Repositories
         Task<Endereco?> GetById(Guid id);
         Task Salvar(Endereco endereco);
         Task<List<Endereco>> GetByCep(string cep);
+        Task Excluir(Guid id);
     }
 }

@@ -10,5 +10,6 @@ namespace Colhetiva.Core.Interfaces.Repositories
         Task<List<Canteiro>> GetCanteiros();
         Task Salvar(Canteiro canteiro);
         Task<Canteiro?> GetById(Guid id);
+        Task Excluir(Guid id);
     }
 }

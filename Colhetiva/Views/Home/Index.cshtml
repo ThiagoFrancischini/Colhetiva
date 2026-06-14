@@ -1,15 +1,153 @@
+@model Colhetiva.ViewModels.HomeDto
 @{
     ViewData["Title"] = "Home";
-    var nomeUsuario = Context.Session.GetString("UsuarioNome");
 }
 
-<h1>Bem vindo à Colhetiva</h1>
+<div class="home-hero">
+    <div>
+        @if (!string.IsNullOrEmpty(Model.NomeUsuario))
+        {
+            <h1 class="home-hero__title">Olá, @Model.NomeUsuario!</h1>
+            <p class="home-hero__sub">Explore as hortas comunitárias disponíveis abaixo.</p>
+        }
+        else
+        {
+            <h1 class="home-hero__title">Bem-vindo à Colhetiva</h1>
+            <p class="home-hero__sub">Conectando pessoas e hortas comunitárias.</p>
+        }
+    </div>
+</div>
 
-@if (!string.IsNullOrEmpty(nomeUsuario))
+<div class="section-header mt-4">
+    <h2 class="section-title" style="margin:0;">
+        Hortas Cadastradas
+        <span class="hortas-count-badge">@Model.Hortas.Count</span>
+    </h2>
+</div>
+
+<form method="get" class="filtro-hortas mt-3 mb-4">
+    <div class="row g-3 align-items-end">
+
+        <!-- Nome da horta -->
+        <div class="col-md-5">
+            <input type="text"
+                   name="nome"
+                   value="@Context.Request.Query["nome"]"
+                   class="form-control"
+                   placeholder="Buscar por nome...">
+        </div>
+
+        <!-- Cidade -->
+        <div class="col-md-5">
+            <input type="text"
+                   name="cidade"
+                   value="@Context.Request.Query["cidade"]"
+                   class="form-control"
+                   placeholder="Buscar por cidade...">
+        </div>
+
+        <!-- Botão -->
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary btn-block">
+                Buscar
+            </button>
+        </div>
+
+    </div>
+</form>
+
+@if (!Model.Hortas.Any())
 {
-    <p>Olá, @nomeUsuario!</p>
+    <div class="alert alert-info" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+        </svg>
+        <span>Nenhuma horta cadastrada ainda. Aguarde o administrador adicionar hortas ao sistema.</span>
+    </div>
 }
 else
 {
-    <p>Usuário não autenticado.</p>
+    <div class="cards-grid" role="list">
+        @foreach (var horta in Model.Hortas)
+        {
+            <article class="horta-card" role="listitem">
+                <div class="horta-card__header" aria-hidden="true">
+                </div>
+
+                <div class="horta-card__body">
+                    <h3 class="horta-card__title">@horta.Nome</h3>
+
+                    <!-- Endereço -->
+                    @if (!string.IsNullOrWhiteSpace(horta.Rua))
+                    {
+                        <p class="horta-card__address">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                            </svg>
+                            @horta.EnderecoCompleto
+                        </p>
+                    }
+
+                    <!-- Responsável -->
+                    @if (!string.IsNullOrWhiteSpace(horta.Responsavel))
+                    {
+                        <p class="horta-card__responsavel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+                            </svg>
+                            Responsável: <strong>@horta.Responsavel</strong>
+                        </p>
+                    }
+
+                    <!-- Estatísticas: canteiros e ferramentas -->
+                    <div class="horta-card__stats">
+                        <div class="horta-stat">
+                            <div>
+                                <span class="horta-stat__num">@horta.CanteirosDisponiveis</span>
+                                <span class="horta-stat__label">/@horta.TotalCanteiros canteiros livres</span>
+                            </div>
+                        </div>
+                        <div class="horta-stat">
+                            <div>
+                                <span class="horta-stat__num">@horta.FerramentasDisponiveis</span>
+                                <span class="horta-stat__label">/@horta.TotalFerramentas ferramentas livres</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Badge de disponibilidade de canteiro -->
+                    @if (horta.TemCanteiroDisponivel)
+                    {
+                        <span class="badge badge-free" title="Há canteiros disponíveis nesta horta">
+                            ✓ Canteiros disponíveis
+                        </span>
+                    }
+                    else if (horta.TotalCanteiros > 0)
+                    {
+                        <span class="badge badge-busy" title="Todos os canteiros estão ocupados">
+                            ✗ Sem canteiros livres
+                        </span>
+                    }
+
+                    <!-- Regras (colapsado se muito longo) -->
+                    @if (!string.IsNullOrWhiteSpace(horta.Regras))
+                    {
+                        <details class="horta-card__regras">
+                            <summary>Ver regras da horta</summary>
+                            <p>@horta.Regras</p>
+                        </details>
+                    }
+                </div>
+
+                <!-- Rodapé com botão de ação -->
+                <div class="horta-card__footer">
+                    <a href="@Url.Action("Index", "Solicitacoes", new { hortaId = horta.Id })"
+                       class="btn btn-primary btn-block"
+                       aria-label="Solicitar canteiro na horta @horta.Nome">
+                        Solicitar Canteiro
+                    </a>
+                </div>
+            </article>
+        }
+    </div>
 }
