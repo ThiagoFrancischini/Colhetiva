@@ -1,8 +1,9 @@
 ﻿@model Colhetiva.Core.Entities.Horta
 @using Colhetiva.Core.Enums
 @{
-    ViewData["Title"] = "Solicitar Canteiro";
-    var pendentes = ViewBag.PendingCanteiros as System.Collections.Generic.List<Guid> ?? new();
+    ViewData["Title"] = "Solicitar Empréstimo";
+    var pendentes = ViewBag.PendingFerramentas as System.Collections.Generic.List<Guid> ?? new();
+    var ativos = ViewBag.ActiveFerramentas as System.Collections.Generic.List<Guid> ?? new();
 }
 
 <div class="ch-page-header mb-4">
@@ -12,11 +13,13 @@
             @if (Model.Endereco != null)
             {
                 <p class="ch-page-header__sub">
-                    @Model.Endereco.Rua@if (!string.IsNullOrWhiteSpace(Model.Endereco.Numero)){<text>, @Model.Endereco.Numero</text>}
-                    — @Model.Endereco.Bairro,
-                    @(Model.Endereco.Cidade?.Nome)/@(Model.Endereco.Cidade?.Estado?.Nome)
-                </p>
-            }
+                    @Model.Endereco.Rua@if (!string.IsNullOrWhiteSpace(Model.Endereco.Numero)){
+                    <text>, @Model.Endereco.Numero</text>
+                }
+                — @Model.Endereco.Bairro,
+                @(Model.Endereco.Cidade?.Nome)/@(Model.Endereco.Cidade?.Estado?.Nome)
+            </p>
+                        }
         </div>
     </div>
     <a href="@Url.Action("Index", "Home")" class="btn-back"
@@ -52,66 +55,68 @@
 
 <div class="panel mb-4">
     <div class="panel-header">
-        <span class="panel-title">Canteiros disponíveis</span>
+        <span class="panel-title">Ferramentas disponíveis</span>
     </div>
     <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
         <table>
             <thead>
                 <tr>
-                    <th>Identificação</th>
-                    <th>Dimensões</th>
+                    <th>Nome</th>
                     <th style="width:140px;">Status</th>
-                    <th style="width:160px;text-align:center;">Ação</th>
+                    <th style="width:190px;text-align:center;">Ação</th>
                 </tr>
             </thead>
             <tbody>
-                @if (Model.Canteiros == null || !Model.Canteiros.Any())
+                @if (Model.Ferramentas == null || !Model.Ferramentas.Any())
                 {
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">
-                            Nenhum canteiro cadastrado nesta horta.
+                        <td colspan="3" class="text-center text-muted py-4">
+                            Nenhuma ferramenta cadastrada nesta horta.
                         </td>
                     </tr>
                 }
                 else
                 {
-                    foreach (var c in Model.Canteiros.OrderBy(x => x.Identificacao))
+                    foreach (var f in Model.Ferramentas.OrderBy(x => x.Nome))
                     {
-                        var isPending = pendentes.Contains(c.Id);
+                        var isPending = pendentes.Contains(f.Id);
+                        var isActive = ativos.Contains(f.Id);
                         <tr>
-                            <td><strong>@c.Identificacao</strong></td>
-                            <td>@c.Dimensoes</td>
+                            <td><strong>@f.Nome</strong></td>
                             <td>
-                                @if (c.Status == StatusCanteiro.Disponivel)
+                                @if (f.Status == StatusFerramenta.Disponivel)
                                 {
-                                    <span class="badge badge-free">Livre</span>
+                                    <span class="badge badge-free">Disponível</span>
                                 }
-                                else if (c.Status == StatusCanteiro.Ocupado)
+                                else if (f.Status == StatusFerramenta.EmUso)
                                 {
-                                    <span class="badge badge-busy">Ocupado</span>
-                                }
-                                else if (c.Status == StatusCanteiro.Manutencao)
-                                {
-                                    <span class="badge badge-maint">Manutenção</span>
+                                    <span class="badge badge-busy">Em Uso</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">@c.Status</span>
+                                    <span class="badge badge-maint">Inativa</span>
                                 }
                             </td>
                             <td class="text-center">
-                                @if (c.Status == StatusCanteiro.Disponivel && !isPending)
+                                @if (f.Status == StatusFerramenta.Disponivel && !isPending && !isActive)
                                 {
                                     <form asp-action="Solicitar" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="canteiroId" value="@c.Id" />
+                                        <input type="hidden" name="ferramentaId" value="@f.Id" />
                                         <input type="hidden" name="hortaId" value="@Model.Id" />
-                                        <button type="submit" class="btn btn-primary btn-sm">Solicitar</button>
+                                        <button type="submit" class="btn btn-primary btn-sm">Solicitar Empréstimo</button>
                                     </form>
                                 }
                                 else if (isPending)
                                 {
                                     <span class="badge" style="background:#fff8e1;color:#b36200;border:1.5px solid #e6a817;">Pendente</span>
+                                }
+                                else if (isActive)
+                                {
+                                    <a href="@Url.Action("Meus", "Emprestimos")" class="btn btn-sm"
+                                       style="background:var(--status-free-bg);color:var(--status-free);border:1.5px solid var(--status-free);font-weight:700;">
+                                        ↩ Devolver
+                                    </a>
                                 }
                                 else
                                 {

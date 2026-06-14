@@ -1,7 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Colhetiva.Core.Interfaces.Service;
-using Colhetiva.DTOs;
-using Colhetiva.Mappings;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,8 +10,6 @@ using System.Collections.Generic;
 
 namespace Colhetiva.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
 public class EmprestimosController : Controller
 {
     private readonly ColhetivaDbContext _db;
@@ -22,6 +17,46 @@ public class EmprestimosController : Controller
     public EmprestimosController(ColhetivaDbContext db)
     {
         _db = db;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index(Guid hortaId)
+    {
+        if (hortaId == Guid.Empty)
+            return RedirectToAction("Index", "Home");
+
+        var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
+        if (string.IsNullOrEmpty(usuarioIdStr))
+        {
+            TempData["MensagemInfo"] = "Faça login para solicitar empréstimo.";
+            return RedirectToAction("Login", "Account");
+        }
+        var usuarioId = Guid.Parse(usuarioIdStr);
+
+        var horta = await _db.Hortas
+            .Include(h => h.Endereco)
+                .ThenInclude(e => e.Cidade)
+                    .ThenInclude(c => c.Estado)
+            .Include(h => h.Usuario)
+            .Include(h => h.Ferramentas)
+            .FirstOrDefaultAsync(h => h.Id == hortaId);
+
+        if (horta == null) return NotFound();
+
+        var pendentes = await _db.Emprestimos
+            .Where(e => e.UsuarioId == usuarioId && e.Status == StatusEmprestimo.Pendente)
+            .Select(e => e.FerramentaId)
+            .ToListAsync();
+
+        var ativos = await _db.Emprestimos
+            .Where(e => e.UsuarioId == usuarioId && e.Status == StatusEmprestimo.Aprovado && e.DataDevolucao == null)
+            .Select(e => e.FerramentaId)
+            .ToListAsync();
+
+        ViewBag.PendingFerramentas = pendentes;
+        ViewBag.ActiveFerramentas = ativos;
+
+        return View(horta);
     }
 
     [HttpPost]
@@ -43,16 +78,15 @@ public class EmprestimosController : Controller
         if (ferramenta == null)
         {
             TempData["MensagemErro"] = "Ferramenta não encontrada.";
-            return RedirectToAction("Details", "Horta", new { id = hortaId });
+            return RedirectToAction("Index", new { hortaId });
         }
 
         if (ferramenta.Status != StatusFerramenta.Disponivel)
         {
             TempData["MensagemErro"] = "Ferramenta não está disponível para empréstimo.";
-            return RedirectToAction("Details", "Horta", new { id = hortaId });
+            return RedirectToAction("Index", new { hortaId });
         }
 
-        // já existe pedido pendente ou empréstimo ativo para este usuário e ferramenta?
         var existe = await _db.Emprestimos.AnyAsync(e =>
             e.UsuarioId == usuarioId &&
             e.FerramentaId == ferramentaId &&
@@ -61,7 +95,7 @@ public class EmprestimosController : Controller
         if (existe)
         {
             TempData["MensagemInfo"] = "Você já possui um pedido/ empréstimo ativo para esta ferramenta.";
-            return RedirectToAction("Details", "Horta", new { id = hortaId });
+            return RedirectToAction("Index", new { hortaId });
         }
 
         var emprestimo = new Emprestimo
@@ -77,31 +111,9 @@ public class EmprestimosController : Controller
         await _db.SaveChangesAsync();
 
         TempData["MensagemSucesso"] = "Pedido de empréstimo enviado. Aguarde a aprovação do responsável.";
-        return RedirectToAction("Details", "Horta", new { id = hortaId });
+        return RedirectToAction("Index", new { hortaId });
     }
-    /*
-    [HttpGet]
-    public async Task<IActionResult> Manage()
-    {
-        var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
-        if (string.IsNullOrEmpty(usuarioIdStr))
-        {
-            TempData["MensagemInfo"] = "Faça login para acessar pedidos de empréstimo.";
-            return RedirectToAction("Login", "Account");
-        }
-        var usuarioId = Guid.Parse(usuarioIdStr);
 
-        var pedidos = await _db.Emprestimos
-            .Include(e => e.Ferramenta)
-                .ThenInclude(f => f.Horta)
-            .Include(e => e.Usuario)
-            .Where(e => e.Ferramenta.Horta.UsuarioId == usuarioId && e.Status == StatusEmprestimo.Pendente)
-            .OrderBy(e => e.DataRetirada)
-            .ToListAsync();
-
-        return View(pedidos);
-    }
-    */
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Aprovar(Guid emprestimoId)
@@ -195,7 +207,7 @@ public class EmprestimosController : Controller
         if (e.Status != StatusEmprestimo.Aprovado || e.DataDevolucao != null)
         {
             TempData["MensagemInfo"] = "Empréstimo não pode ser devolvido.";
-            return RedirectToAction("Details", "Horta", new { id = hortaId });
+            return RedirectToAction("Index", new { hortaId });
         }
 
         e.DataDevolucao = DateTime.UtcNow;
@@ -203,7 +215,7 @@ public class EmprestimosController : Controller
         await _db.SaveChangesAsync();
 
         TempData["MensagemSucesso"] = "Ferramenta devolvida com sucesso.";
-        return RedirectToAction("Details", "Horta", new { id = hortaId });
+        return RedirectToAction("Index", new { hortaId });
     }
 
     [HttpGet]

@@ -16,19 +16,16 @@
            
             @if (!string.IsNullOrEmpty(nomeUsuario))
             {
-                <!-- Left: Welcome message -->
                 <div style="justify-self: start;">
                     <span class="navbar-text text-dark mb-0">
                         Bem-vindo, <strong>@nomeUsuario</strong>
                     </span>
                 </div>
                 
-                <!-- Center: Brand -->
                 <div style="justify-self: center;">
                     <a class="navbar-brand fw-bold text-success mb-0" href="@Url.Action("Index", "Home")">Colhetiva</a>
                 </div>
                 
-                <!-- Right: Action buttons -->
                 <div style="justify-self: end; display: flex; align-items: center; gap: 0.5rem;">
                     @{
                         var usuarioRole = Context.Session.GetString("UsuarioRole");
@@ -41,7 +38,7 @@
                         </a>
                     }
                     <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Manage", "Solicitacoes")">
-                        Solicitações
+                        SolicitaÃ§Ãµes
                     </a>
                     <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index", "Profile")">
                         Perfil
@@ -53,7 +50,6 @@
             }
             else
             {
-                <!-- When not logged in, just show brand centered -->
                 <div style="grid-column: 1 / span 3; text-align: center;">
                     <a class="navbar-brand fw-bold text-success mb-0" href="@Url.Action("Index", "Home")">Colhetiva</a>
                 </div>

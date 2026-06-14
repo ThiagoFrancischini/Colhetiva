@@ -46,7 +46,6 @@ namespace Colhetiva.Controllers
             if (horta == null)
                 return NotFound();
 
-            // IDs de canteiros para os quais o usuário já tem solicitação pendente
             var pendentes = await _db.Solicitacoes
                 .Where(s => s.UsuarioId == usuarioId && s.Status == StatusSolicitacao.Pendente)
                 .Select(s => s.CanteiroId)
@@ -110,7 +109,6 @@ namespace Colhetiva.Controllers
             return RedirectToAction("Index", new { hortaId });
         }
 
-        // --- NOVAS AÇÕES: Gerenciar / Aprovar / Reprovar ---
 
         [HttpGet]
         public async Task<IActionResult> Manage()
@@ -124,7 +122,6 @@ namespace Colhetiva.Controllers
 
             var usuarioId = Guid.Parse(usuarioIdStr);
 
-            // Solicitações pendentes relativas às hortas cujo responsável é o usuário atual
             var solicitacoes = await _db.Solicitacoes
                 .Include(s => s.Canteiro)
                     .ThenInclude(c => c.Horta)
@@ -163,13 +160,10 @@ namespace Colhetiva.Controllers
                 return RedirectToAction("Manage");
             }
 
-            // Aprovar
             s.Status = StatusSolicitacao.Aprovado;
 
-            // Atualizar canteiro para ocupado
             s.Canteiro.Status = StatusCanteiro.Ocupado;
 
-            // Reprovar outras solicitações pendentes para o mesmo canteiro
             var outras = await _db.Solicitacoes
                 .Where(x => x.CanteiroId == s.CanteiroId && x.Status == StatusSolicitacao.Pendente && x.Id != s.Id)
                 .ToListAsync();
