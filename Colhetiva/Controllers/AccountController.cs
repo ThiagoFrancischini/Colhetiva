@@ -169,14 +169,6 @@ namespace Colhetiva.Controllers
             var cidades = await _db.Cidades.AsNoTracking().OrderBy(c => c.Nome).ToListAsync();
             ViewBag.Cidades = new SelectList(cidades, "Id", "Nome");
 
-            System.Diagnostics.Debug.WriteLine($"=== DEBUG REGISTER ORGANIZATION ===");
-            System.Diagnostics.Debug.WriteLine($"Nome: {model.Nome}");
-            System.Diagnostics.Debug.WriteLine($"Email: {model.Email}");
-            System.Diagnostics.Debug.WriteLine($"CidadeId: {model.Endereco?.CidadeId}");
-            System.Diagnostics.Debug.WriteLine($"CidadeId is empty: {model.Endereco?.CidadeId == Guid.Empty}");
-            System.Diagnostics.Debug.WriteLine($"Model Endereco is null: {model.Endereco == null}");
-            System.Diagnostics.Debug.WriteLine($"==================================");
-
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -195,6 +187,7 @@ namespace Colhetiva.Controllers
 
             try
             {
+                // salvar endereço da organização
                 var endereco = new Endereco
                 {
                     Id = Guid.NewGuid(),
@@ -210,6 +203,21 @@ namespace Colhetiva.Controllers
 
                 await _enderecoService.Salvar(endereco);
 
+                // criar organização
+                var organization = new Organization
+                {
+                    Id = Guid.NewGuid(),
+                    Nome = model.Nome,
+                    Cnpj = model.Endereco?.Cep ?? "", // se tiver um campo CNPJ no DTO, use-o; aqui uso Cep temporariamente se DTO não tiver CNPJ
+                    Tipo = model.TipoOrganizacao ?? string.Empty,
+                    EnderecoId = endereco.Id,
+                    Endereco = endereco
+                };
+
+                await _db.Organizations.AddAsync(organization);
+                await _db.SaveChangesAsync();
+
+                // criar usuário responsável vinculado à organização
                 var usuario = new Usuario
                 {
                     Nome = model.Nome,
@@ -217,10 +225,20 @@ namespace Colhetiva.Controllers
                     Email = model.Email,
                     Password = model.Password,
                     EnderecoId = endereco.Id,
-                    Endereco = endereco
+                    Endereco = endereco,
+                    OrganizationId = organization.Id
                 };
 
                 await _usuarioService.Salvar(usuario);
+
+                // promover usercontext para ADMIN da organização
+                var uc = await _db.UserContexts.FirstOrDefaultAsync(x => x.UsuarioId == usuario.Id);
+                if (uc != null)
+                {
+                    uc.Role = Role.ADMIN;
+                    uc.HortaId = null;
+                    await _db.SaveChangesAsync();
+                }
 
                 TempData["MensagemSucesso"] = "Organização cadastrada com sucesso! Faça login para acessar o painel administrativo.";
                 return RedirectToAction("Login");

@@ -21,6 +21,7 @@
       <div class="form-title">Cadastrar Organização</div>
 
       <form asp-action="RegisterOrganization" method="post" novalidate>
+        @Html.AntiForgeryToken()
         <div asp-validation-summary="All" class="text-danger" style="margin-bottom:12px;"></div>
 
         <div class="field-row">
@@ -75,11 +76,11 @@
 
         <div class="field-row">
           <div class="field">
-            <label for="endereco.Cep">CEP</label>
-            <input name="endereco.Cep" class="login-input" placeholder="00000-000" value="@(ViewData.Model?.Endereco?.Cep ?? "")" />
+            <label for="Endereco.Cep">CEP</label>
+            <input name="Endereco.Cep" class="login-input" placeholder="00000-000" value="@(ViewData.Model?.Endereco?.Cep ?? "")" />
           </div>
           <div class="field">
-            <label for="endereco.CidadeId">Cidade</label>
+            <label for="Endereco.CidadeId">Cidade</label>
             <input type="hidden" name="Endereco.CidadeId" id="CidadeId_Hidden" value="@(Model?.Endereco?.CidadeId.ToString() ?? "")" />
             <select id="CidadeId_Select" class="login-input" onchange="document.getElementById('CidadeId_Hidden').value = this.value">
                 <option value="">Selecione...</option>
@@ -92,24 +93,24 @@
         </div>
 
         <div class="field">
-          <label for="endereco.Rua">Rua</label>
-            <input name="endereco.Rua" class="login-input" placeholder="Rua Exemplo, Av. ..." value="@(ViewData.Model?.Endereco?.Rua ?? "")" />
+          <label for="Endereco.Rua">Rua</label>
+            <input name="Endereco.Rua" class="login-input" placeholder="Rua Exemplo, Av. ..." value="@(ViewData.Model?.Endereco?.Rua ?? "")" />
         </div>
 
         <div class="field-row">
           <div class="field">
-            <label for="endereco.Bairro">Bairro</label>
-            <input name="endereco.Bairro" class="login-input" placeholder="Bairro" value="@(ViewData.Model?.Endereco?.Bairro ?? "")" />
+            <label for="Endereco.Bairro">Bairro</label>
+            <input name="Endereco.Bairro" class="login-input" placeholder="Bairro" value="@(ViewData.Model?.Endereco?.Bairro ?? "")" />
           </div>
           <div class="field">
-            <label for="endereco.Numero">Número</label>
-            <input name="endereco.Numero" class="login-input" placeholder="Número" value="@(ViewData.Model?.Endereco?.Numero ?? "")" />
+            <label for="Endereco.Numero">Número</label>
+            <input name="Endereco.Numero" class="login-input" placeholder="Número" value="@(ViewData.Model?.Endereco?.Numero ?? "")" />
           </div>
         </div>
 
         <div class="field">
-          <label for="endereco.Complemento">Complemento</label>
-        <input name="endereco.Complemento" class="login-input" placeholder="Complemento" value="@(ViewData.Model?.Endereco?.Complemento ?? "")" />
+          <label for="Endereco.Complemento">Complemento</label>
+          <input name="Endereco.Complemento" class="login-input" placeholder="Complemento" value="@(ViewData.Model?.Endereco?.Complemento ?? "")" />
         </div>
 
         <button type="submit" class="btn-primary" style="margin-top:8px;">Cadastrar Organização</button>
