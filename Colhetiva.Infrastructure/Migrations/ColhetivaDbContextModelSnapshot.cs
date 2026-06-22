@@ -206,6 +206,9 @@ namespace Colhetiva.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Regras")
                         .HasColumnType("text");
 
@@ -216,9 +219,40 @@ namespace Colhetiva.Infrastructure.Migrations
 
                     b.HasIndex("EnderecoId");
 
+                    b.HasIndex("OrganizationId");
+
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("Hortas");
+                });
+
+            modelBuilder.Entity("Colhetiva.Core.Entities.Organization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Cnpj")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid?>("EnderecoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Tipo")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnderecoId");
+
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("Colhetiva.Core.Entities.Solicitacao", b =>
@@ -296,6 +330,9 @@ namespace Colhetiva.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
@@ -304,6 +341,8 @@ namespace Colhetiva.Infrastructure.Migrations
 
                     b.HasIndex("EnderecoId")
                         .IsUnique();
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Usuarios");
                 });
@@ -379,6 +418,10 @@ namespace Colhetiva.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Colhetiva.Core.Entities.Organization", "Organization")
+                        .WithMany("Hortas")
+                        .HasForeignKey("OrganizationId");
+
                     b.HasOne("Colhetiva.Core.Entities.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
@@ -387,7 +430,18 @@ namespace Colhetiva.Infrastructure.Migrations
 
                     b.Navigation("Endereco");
 
+                    b.Navigation("Organization");
+
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Colhetiva.Core.Entities.Organization", b =>
+                {
+                    b.HasOne("Colhetiva.Core.Entities.Endereco", "Endereco")
+                        .WithMany()
+                        .HasForeignKey("EnderecoId");
+
+                    b.Navigation("Endereco");
                 });
 
             modelBuilder.Entity("Colhetiva.Core.Entities.Solicitacao", b =>
@@ -434,7 +488,13 @@ namespace Colhetiva.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Colhetiva.Core.Entities.Organization", "Organization")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("OrganizationId");
+
                     b.Navigation("Endereco");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Colhetiva.Core.Entities.Horta", b =>
@@ -442,6 +502,13 @@ namespace Colhetiva.Infrastructure.Migrations
                     b.Navigation("Canteiros");
 
                     b.Navigation("Ferramentas");
+                });
+
+            modelBuilder.Entity("Colhetiva.Core.Entities.Organization", b =>
+                {
+                    b.Navigation("Hortas");
+
+                    b.Navigation("Usuarios");
                 });
 
             modelBuilder.Entity("Colhetiva.Core.Entities.Usuario", b =>
