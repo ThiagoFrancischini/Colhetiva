@@ -3,8 +3,18 @@
     ViewData["Title"] = "Editar horta";
 }
 
-<h1 class="h4 mb-3 ps-3">Editar horta</h1>
-<div asp-validation-summary="All" class="text-danger mb-3"></div>
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">Editar horta</h1>
+            <p class="ch-page-header__sub">Atualize os dados, canteiros e ferramentas da horta</p>
+        </div>
+    </div>
+    <a asp-action="Index" class="btn-back" style="border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.9);background:transparent;">
+        ← Voltar
+    </a>
+</div>
+
 
 <form asp-action="Edit" asp-route-id="@Model.Id" method="post" id="formHorta">
     <input type="hidden" asp-for="Id" />
@@ -12,77 +22,89 @@
     <input type="hidden" asp-for="Endereco.Latitude" />
     <input type="hidden" asp-for="Endereco.Longitude" />
 
-    <div class="card mb-3">
-        <div class="card-header px-4 py-3 fw-semibold">Dados da horta</div>
-        <div class="card-body row g-3 px-4">
-            <div class="col-md-6">
-                <label asp-for="Nome" class="form-label"></label>
-                <input asp-for="Nome" class="form-control" />
-                <span asp-validation-for="Nome" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="UsuarioId" class="form-label"></label>
-                <select asp-for="UsuarioId" asp-items="ViewBag.Usuarios" class="form-select">
-                    <option value="">Selecione...</option>
-                </select>
-                <span asp-validation-for="UsuarioId" class="text-danger"></span>
-            </div>
-            <div class="col-12">
-                <label asp-for="Regras" class="form-label"></label>
-                <textarea asp-for="Regras" class="form-control" rows="3"></textarea>
+    <div class="panel mb-4">
+        <div class="panel-header">
+            <span class="panel-title">Dados da horta</span>
+        </div>
+        <div class="panel-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Nome" class="field-label"></label>
+                    <input asp-for="Nome" class="form-control" />
+                    <span asp-validation-for="Nome" class="hint-text text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UsuarioId" class="field-label"></label>
+                    <select asp-for="UsuarioId" asp-items="ViewBag.Usuarios" class="form-select">
+                        <option value="">Selecione...</option>
+                    </select>
+                    <span asp-validation-for="UsuarioId" class="hint-text text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Regras" class="field-label"></label>
+                    <textarea asp-for="Regras" class="form-control" rows="4"
+                              placeholder="Descreva as regras e orientações para os participantes..."></textarea>
+                    <span class="hint-text">Visível publicamente na página da horta.</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header px-4 py-3 fw-semibold">Endereço da horta</div>
-        <div class="card-body row g-3 px-4">
-            <div class="col-md-3">
-                <label asp-for="Endereco.Cep" class="form-label"></label>
-                <input asp-for="Endereco.Cep" class="form-control" placeholder="00000000" />
-                <span asp-validation-for="Endereco.Cep" class="text-danger"></span>
-            </div>
-            <div class="col-md-5">
-                <label asp-for="Endereco.CidadeId" class="form-label"></label>
-                <select asp-for="Endereco.CidadeId" asp-items="ViewBag.Cidades" class="form-select">
-                    <option value="">Selecione...</option>
-                </select>
-                <span asp-validation-for="Endereco.CidadeId" class="text-danger"></span>
-            </div>
-            <div class="col-md-4">
-                <label asp-for="Endereco.Rua" class="form-label"></label>
-                <input asp-for="Endereco.Rua" class="form-control" />
-                <span asp-validation-for="Endereco.Rua" class="text-danger"></span>
-            </div>
-            <div class="col-md-2">
-                <label asp-for="Endereco.Numero" class="form-label"></label>
-                <input asp-for="Endereco.Numero" class="form-control" />
-            </div>
-            <div class="col-md-4">
-                <label asp-for="Endereco.Bairro" class="form-label"></label>
-                <input asp-for="Endereco.Bairro" class="form-control" />
-                <span asp-validation-for="Endereco.Bairro" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="Endereco.Complemento" class="form-label"></label>
-                <input asp-for="Endereco.Complemento" class="form-control" />
+    <div class="panel mb-4">
+        <div class="panel-header">
+            <span class="panel-title">Endereço da horta</span>
+        </div>
+        <div class="panel-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label asp-for="Endereco.Cep" class="field-label"></label>
+                    <input asp-for="Endereco.Cep" class="form-control" placeholder="00000-000" />
+                    <span asp-validation-for="Endereco.Cep" class="hint-text text-danger"></span>
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="Endereco.CidadeId" class="field-label"></label>
+                    <select asp-for="Endereco.CidadeId" asp-items="ViewBag.Cidades" class="form-select">
+                        <option value="">Selecione...</option>
+                    </select>
+                    <span asp-validation-for="Endereco.CidadeId" class="hint-text text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Endereco.Rua" class="field-label"></label>
+                    <input asp-for="Endereco.Rua" class="form-control" />
+                    <span asp-validation-for="Endereco.Rua" class="hint-text text-danger"></span>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Endereco.Numero" class="field-label"></label>
+                    <input asp-for="Endereco.Numero" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Endereco.Bairro" class="field-label"></label>
+                    <input asp-for="Endereco.Bairro" class="form-control" />
+                    <span asp-validation-for="Endereco.Bairro" class="hint-text text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Endereco.Complemento" class="field-label"></label>
+                    <input asp-for="Endereco.Complemento" class="form-control" />
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center px-4 py-3 fw-semibold">
-            <span>Canteiros</span>
-            <button type="button" class="btn btn-sm btn-outline-success" id="btnAddCanteiro">Adicionar canteiro</button>
+    <div class="panel mb-4">
+        <div class="panel-header">
+            <span class="panel-title">Canteiros</span>
+            <button type="button" class="btn btn-sm ch-btn-edit" id="btnAddCanteiro">
+                + Adicionar canteiro
+            </button>
         </div>
-        <div class="table-responsive">
-            <table class="table table-sm mb-0">
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
                 <thead>
                     <tr>
                         <th>Identificação</th>
                         <th>Dimensões</th>
-                        <th>Status</th>
-                        <th style="width: 70px;">Remover</th>
+                        <th style="width:150px;">Status</th>
+                        <th style="width:80px;text-align:center;">Remover</th>
                     </tr>
                 </thead>
                 <tbody id="canteirosBody">
@@ -93,20 +115,26 @@
                 </tbody>
             </table>
         </div>
+        <div id="canteirosEmpty" class="py-4 text-center text-muted"
+             style="display:@(Model.Canteiros.Count == 0 ? "block" : "none");font-size:.9rem;">
+            Nenhum canteiro cadastrado. Clique em <strong>Adicionar canteiro</strong> para começar.
+        </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center px-4 py-3 fw-semibold">
-            <span>Ferramentas</span>
-            <button type="button" class="btn btn-sm btn-outline-success" id="btnAddFerramenta">Adicionar ferramenta</button>
+    <div class="panel mb-4">
+        <div class="panel-header">
+            <span class="panel-title">Ferramentas</span>
+            <button type="button" class="btn btn-sm ch-btn-edit" id="btnAddFerramenta">
+                + Adicionar ferramenta
+            </button>
         </div>
-        <div class="table-responsive">
-            <table class="table table-sm mb-0">
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Status</th>
-                        <th style="width: 70px;">Remover</th>
+                        <th style="width:150px;">Status</th>
+                        <th style="width:80px;text-align:center;">Remover</th>
                     </tr>
                 </thead>
                 <tbody id="ferramentasBody">
@@ -117,10 +145,21 @@
                 </tbody>
             </table>
         </div>
+        <div id="ferramentasEmpty" class="py-4 text-center text-muted"
+             style="display:@(Model.Ferramentas.Count == 0 ? "block" : "none");font-size:.9rem;">
+            Nenhuma ferramenta cadastrada. Clique em <strong>Adicionar ferramenta</strong> para começar.
+        </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <a class="btn btn-outline-secondary" asp-action="Index">Voltar</a>
+    <div class="d-flex gap-3 align-items-center pb-4">
+        <button type="submit" class="btn btn-primary btn-lg">
+            Salvar alterações
+        </button>
+        <a asp-action="Index" class="btn btn-secondary">
+            Cancelar
+        </a>
+    </div>
+
 </form>
 
 @section Scripts {
@@ -132,17 +171,39 @@
             const urlC = @Html.Raw(Json.Serialize(Url.Action("NovoCanteiroLinha", "CadastroHortas")));
             const urlF = @Html.Raw(Json.Serialize(Url.Action("NovoFerramentaLinha", "CadastroHortas")));
 
+            function toggleEmpty(bodyId, emptyId) {
+                const hasRows = document.getElementById(bodyId).querySelectorAll('tr').length > 0;
+                document.getElementById(emptyId).style.display = hasRows ? 'none' : 'block';
+            }
+
             document.getElementById('btnAddCanteiro').addEventListener('click', async function () {
                 const res = await fetch(urlC + '?i=' + cIx);
                 const html = await res.text();
                 document.getElementById('canteirosBody').insertAdjacentHTML('beforeend', html);
                 cIx++;
+                toggleEmpty('canteirosBody', 'canteirosEmpty');
             });
+
             document.getElementById('btnAddFerramenta').addEventListener('click', async function () {
                 const res = await fetch(urlF + '?i=' + fIx);
                 const html = await res.text();
                 document.getElementById('ferramentasBody').insertAdjacentHTML('beforeend', html);
                 fIx++;
+                toggleEmpty('ferramentasBody', 'ferramentasEmpty');
+            });
+
+            document.getElementById('canteirosBody').addEventListener('click', function (e) {
+                if (e.target.closest('[data-remove-row]')) {
+                    e.target.closest('tr').remove();
+                    toggleEmpty('canteirosBody', 'canteirosEmpty');
+                }
+            });
+
+            document.getElementById('ferramentasBody').addEventListener('click', function (e) {
+                if (e.target.closest('[data-remove-row]')) {
+                    e.target.closest('tr').remove();
+                    toggleEmpty('ferramentasBody', 'ferramentasEmpty');
+                }
             });
         })();
     </script>

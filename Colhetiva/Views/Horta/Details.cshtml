@@ -1,0 +1,245 @@
+﻿@model Colhetiva.Core.Entities.Horta
+@using Colhetiva.Core.Enums
+@{
+    ViewData["Title"] = "Detalhes da Horta";
+    var pendentes = ViewBag.PendingCanteiros as System.Collections.Generic.List<Guid> ?? new();
+    var myActive = ViewBag.MyActiveEmprestimos as List<Guid> ?? new List<Guid>();
+}
+
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">@Model.Nome</h1>
+            @if (Model.Endereco != null)
+            {
+                <p class="ch-page-header__sub">
+                    @Model.Endereco.Rua@if (!string.IsNullOrWhiteSpace(Model.Endereco.Numero)){
+                    <text>, @Model.Endereco.Numero</text>
+                }
+                — @Model.Endereco.Bairro,
+                @(Model.Endereco.Cidade?.Nome)/@(Model.Endereco.Cidade?.Estado?.Nome)
+            </p>
+                        }
+        </div>
+    </div>
+    <a href="@Url.Action("Index", "Hortas")" class="btn-back" style="border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.9);background:transparent;">
+        ← Voltar
+    </a>
+</div>
+
+<div class="row g-4 align-items-start">
+
+    <div class="col-md-5 col-lg-4">
+
+        <div class="panel mb-4">
+            <div class="panel-header">
+                <span class="panel-title">Informações</span>
+            </div>
+            <div class="panel-body py-3">
+
+                @if (Model.Endereco != null)
+                {
+                    <div class="info-card mb-0">
+                        <div class="info-row">
+                            <span class="info-row__label fw-bold text-nowrap me-2" style="min-width:90px;color:var(--green-dark);">Endereço</span>
+                            <span>
+                                @Model.Endereco.Rua@if (!string.IsNullOrWhiteSpace(Model.Endereco.Numero)){
+                                <text>, @Model.Endereco.Numero</text>
+                            }
+                            — @Model.Endereco.Bairro<br />
+                            @(Model.Endereco.Cidade?.Nome)/@(Model.Endereco.Cidade?.Estado?.Nome)
+                            — CEP @Model.Endereco.Cep
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-row__label fw-bold text-nowrap me-2" style="min-width:90px;color:var(--green-dark);">Gestor</span>
+                        <span>@Model.Usuario?.Nome</span>
+                    </div>
+                </div>
+                                }
+
+                <div class="mt-3">
+                    <p class="fw-bold mb-2" style="color:var(--green-dark);font-size:.9rem;">Mural Público / Regras</p>
+                    <div class="mural-box">
+                        @if (!string.IsNullOrWhiteSpace(Model.Regras))
+                        {
+                            @Model.Regras
+                        }
+                        else
+                        {
+                            <em style="color:var(--gray-400)">Sem regras cadastradas.</em>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">Ações rápidas</span>
+            </div>
+            <div class="panel-body d-flex flex-column gap-2">
+                <a href="@Url.Action("Index", "Solicitacoes", new { hortaId = Model.Id })"
+                   class="btn btn-primary btn-block" style="justify-content:center;">
+                    Solicitar Participação na Horta
+                </a>
+                <a href="@Url.Action("Index", "Emprestimos", new { hortaId = Model.Id} )"
+                   class="btn btn-secondary btn-block" style="justify-content:center;">
+                    Meus Empréstimos
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-7 col-lg-8">
+
+        <div class="section-header mb-3">
+            <h4 class="section-title m-0">Canteiros</h4>
+        </div>
+
+        <div class="table-wrapper mb-5">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Identificação</th>
+                        <th>Dimensões</th>
+                        <th style="width:130px;">Status</th>
+                        <th style="width:170px;text-align:center;">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Canteiros == null || !Model.Canteiros.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                Nenhum canteiro cadastrado.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var c in Model.Canteiros.OrderBy(x => x.Identificacao))
+                        {
+                            var isPending = pendentes.Contains(c.Id);
+                            <tr>
+                                <td><strong>@c.Identificacao</strong></td>
+                                <td>@c.Dimensoes</td>
+                                <td>
+                                    @if (c.Status == StatusCanteiro.Disponivel)
+                                    {
+                                        <span class="badge badge-free">Livre</span>
+                                    }
+                                    else if (c.Status == StatusCanteiro.Ocupado)
+                                    {
+                                        <span class="badge badge-busy">Ocupado</span>
+                                    }
+                                    else if (c.Status == StatusCanteiro.Manutencao)
+                                    {
+                                        <span class="badge badge-maint">Manutenção</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@c.Status</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (c.Status == StatusCanteiro.Disponivel && !isPending)
+                                    {
+                                        <form asp-controller="Solicitacoes" asp-action="Solicitar" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="canteiroId" value="@c.Id" />
+                                            <input type="hidden" name="hortaId" value="@Model.Id" />
+                                            <button type="submit" class="btn btn-primary btn-sm">Solicitar</button>
+                                        </form>
+                                    }
+                                    else if (isPending)
+                                    {
+                                        <span class="badge" style="background:#fff8e1;color:#b36200;border:1.5px solid #e6a817;">Pendente</span>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm" disabled
+                                                style="background:var(--gray-100);color:var(--gray-400);border-color:var(--gray-200);cursor:not-allowed;">
+                                            Indisponível
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-header mb-3">
+            <h4 class="section-title m-0">Ferramentas</h4>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th style="width:130px;">Status</th>
+                        <th style="width:210px;text-align:center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Ferramentas == null || !Model.Ferramentas.Any())
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">
+                                Nenhuma ferramenta cadastrada.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var f in Model.Ferramentas.OrderBy(x => x.Nome))
+                        {
+                            <tr>
+                                <td>@f.Nome</td>
+                                <td>
+                                    @if (f.Status == StatusFerramenta.Disponivel)
+                                    {
+                                        <span class="badge badge-free">Disponível</span>
+                                    }
+                                    else if (f.Status == StatusFerramenta.EmUso)
+                                    {
+                                        <span class="badge badge-busy">Em Uso</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-maint">Inativa</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="table-actions justify-content-center">
+                                        @if (f.Status == StatusFerramenta.Disponivel)
+                                        {
+                                            <form asp-controller="Emprestimos" asp-action="Solicitar" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="ferramentaId" value="@f.Id" />
+                                                <input type="hidden" name="hortaId" value="@Model.Id" />
+                                                <button type="submit" class="btn btn-primary btn-sm">Solicitar Empréstimo</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm" disabled
+                                                    style="background:var(--gray-100);color:var(--gray-400);border-color:var(--gray-200);cursor:not-allowed;">
+                                                Indisponível
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

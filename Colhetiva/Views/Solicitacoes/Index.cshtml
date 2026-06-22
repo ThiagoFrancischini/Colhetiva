@@ -1,0 +1,130 @@
+﻿@model Colhetiva.Core.Entities.Horta
+@using Colhetiva.Core.Enums
+@{
+    ViewData["Title"] = "Solicitar Canteiro";
+    var pendentes = ViewBag.PendingCanteiros as System.Collections.Generic.List<Guid> ?? new();
+}
+
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">@Model.Nome</h1>
+            @if (Model.Endereco != null)
+            {
+                <p class="ch-page-header__sub">
+                    @Model.Endereco.Rua@if (!string.IsNullOrWhiteSpace(Model.Endereco.Numero)){<text>, @Model.Endereco.Numero</text>}
+                    — @Model.Endereco.Bairro,
+                    @(Model.Endereco.Cidade?.Nome)/@(Model.Endereco.Cidade?.Estado?.Nome)
+                </p>
+            }
+        </div>
+    </div>
+    <a href="@Url.Action("Index", "Home")" class="btn-back"
+       style="border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.9);background:transparent;">
+        ← Voltar às hortas
+    </a>
+</div>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success ch-alert-animate mb-3">@TempData["MensagemSucesso"]</div>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger ch-alert-animate mb-3">@TempData["MensagemErro"]</div>
+}
+@if (TempData["MensagemInfo"] != null)
+{
+    <div class="alert alert-info ch-alert-animate mb-3">@TempData["MensagemInfo"]</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Regras))
+{
+    <div class="panel mb-4">
+        <div class="panel-header">
+            <span class="panel-title">Regras da horta</span>
+        </div>
+        <div class="panel-body">
+            <div class="mural-box">@Model.Regras</div>
+        </div>
+    </div>
+}
+
+<div class="panel mb-4">
+    <div class="panel-header">
+        <span class="panel-title">Canteiros disponíveis</span>
+    </div>
+    <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Identificação</th>
+                    <th>Dimensões</th>
+                    <th style="width:140px;">Status</th>
+                    <th style="width:160px;text-align:center;">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Canteiros == null || !Model.Canteiros.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            Nenhum canteiro cadastrado nesta horta.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var c in Model.Canteiros.OrderBy(x => x.Identificacao))
+                    {
+                        var isPending = pendentes.Contains(c.Id);
+                        <tr>
+                            <td><strong>@c.Identificacao</strong></td>
+                            <td>@c.Dimensoes</td>
+                            <td>
+                                @if (c.Status == StatusCanteiro.Disponivel)
+                                {
+                                    <span class="badge badge-free">Livre</span>
+                                }
+                                else if (c.Status == StatusCanteiro.Ocupado)
+                                {
+                                    <span class="badge badge-busy">Ocupado</span>
+                                }
+                                else if (c.Status == StatusCanteiro.Manutencao)
+                                {
+                                    <span class="badge badge-maint">Manutenção</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@c.Status</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (c.Status == StatusCanteiro.Disponivel && !isPending)
+                                {
+                                    <form asp-action="Solicitar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="canteiroId" value="@c.Id" />
+                                        <input type="hidden" name="hortaId" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-primary btn-sm">Solicitar</button>
+                                    </form>
+                                }
+                                else if (isPending)
+                                {
+                                    <span class="badge" style="background:#fff8e1;color:#b36200;border:1.5px solid #e6a817;">Pendente</span>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm" disabled
+                                            style="background:var(--gray-100);color:var(--gray-400);border-color:var(--gray-200);cursor:not-allowed;">
+                                        Indisponível
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

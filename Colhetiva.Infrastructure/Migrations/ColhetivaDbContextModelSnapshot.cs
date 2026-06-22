@@ -86,6 +86,9 @@ namespace Colhetiva.Infrastructure.Migrations
                     b.Property<Guid>("FerramentaId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("UsuarioId")
                         .HasColumnType("uuid");
 

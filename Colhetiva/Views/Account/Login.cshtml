@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="~/css/login.css" />
 }
 
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success ch-alert-animate mb-3">@TempData["MensagemSucesso"]</div>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger ch-alert-animate mb-3">@TempData["MensagemErro"]</div>
+}
+@if (TempData["MensagemInfo"] != null)
+{
+    <div class="alert alert-info ch-alert-animate mb-3">@TempData["MensagemInfo"]</div>
+}
+
 <div id="s2" class="screen active">
   <div class="auth-wrap">
     <div class="auth-side">

@@ -1,0 +1,52 @@
+﻿@model List<Colhetiva.Core.Entities.Emprestimo>
+@{
+    ViewData["Title"] = "Gerenciar Empréstimos";
+}
+
+<h2>Pedidos de Empréstimo pendentes</h2>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["MensagemSucesso"]</div>
+}
+@if (!Model.Any())
+{
+    <div class="alert alert-secondary">Nenhum pedido pendente.</div>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Horta</th>
+                <th>Ferramenta</th>
+                <th>Solicitante</th>
+                <th>Pedido</th>
+                <th style="width:200px;text-align:center;">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.Ferramenta.Horta?.Nome</td>
+                    <td>@e.Ferramenta.Nome</td>
+                    <td>@e.Usuario?.Nome</td>
+                    <td>@e.DataRetirada.ToLocalTime().ToString("g")</td>
+                    <td class="text-center">
+                        <form asp-action="Aprovar" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="emprestimoId" value="@e.Id" />
+                            <button type="submit" class="btn btn-success btn-sm">Aprovar</button>
+                        </form>
+                        <form asp-action="Reprovar" method="post" class="d-inline ms-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="emprestimoId" value="@e.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Reprovar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
