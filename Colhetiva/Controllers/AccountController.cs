@@ -7,6 +7,7 @@ using Colhetiva.Infrastructure.Context;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Colhetiva.Core.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Colhetiva.Controllers
 {
@@ -14,11 +15,13 @@ namespace Colhetiva.Controllers
     {
         private readonly IUsuarioService _usuarioService;
         private readonly IEnderecoService _enderecoService;
+        private readonly IHortaService _hortaService;
         private readonly ColhetivaDbContext _db;
 
         public AccountController(
             IUsuarioService usuarioService, 
             IEnderecoService enderecoService,
+            IHortaService hortaService,
             ColhetivaDbContext db)
         {
             _usuarioService = usuarioService;
@@ -45,7 +48,7 @@ namespace Colhetiva.Controllers
 
                 if (usuario == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Email ou senha inv√°lidos.");
+                    ModelState.AddModelError(string.Empty, "Email ou senha inv·lidos.");
                     return View(model);
                 }
 
@@ -93,7 +96,7 @@ namespace Colhetiva.Controllers
                 model.Endereco.Cep = new string(model.Endereco.Cep?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
                 if (model.Endereco.Cep.Length != 8)
                 {
-                    ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 d√≠gitos.");
+                    ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 dÌgitos.");
                     return View(model);
                 }
                 
@@ -109,7 +112,7 @@ namespace Colhetiva.Controllers
                 model.CPF = new string(model.CPF.Where(char.IsDigit).ToArray());
                 if (model.CPF.Length != 11)
                 {
-                    ModelState.AddModelError("CPF", "CPF deve ter 11 d√≠gitos.");
+                    ModelState.AddModelError("CPF", "CPF deve ter 11 dÌgitos.");
                     return View(model);
                 }
             }
@@ -143,7 +146,7 @@ namespace Colhetiva.Controllers
 
                 await _usuarioService.Salvar(usuario);
 
-                TempData["MensagemSucesso"] = "Conta criada com sucesso! Fa√ßa login para continuar.";
+                TempData["MensagemSucesso"] = "Conta criada com sucesso! FaÁa login para continuar.";
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
@@ -174,20 +177,20 @@ namespace Colhetiva.Controllers
 
             if (model.Endereco == null || model.Endereco.CidadeId == Guid.Empty)
             {
-                ModelState.AddModelError(string.Empty, "Cidade n√£o foi selecionada corretamente. Por favor, selecione uma cidade.");
+                ModelState.AddModelError(string.Empty, "Cidade n„o foi selecionada corretamente. Por favor, selecione uma cidade.");
                 return View(model);
             }
 
             model.Endereco.Cep = new string(model.Endereco.Cep?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
             if (model.Endereco.Cep.Length != 8)
             {
-                ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 d√≠gitos.");
+                ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 dÌgitos.");
                 return View(model);
             }
 
             try
             {
-                // salvar endere√ßo da organiza√ß√£o
+                // salvar endereÁo da organizaÁ„o
                 var endereco = new Endereco
                 {
                     Id = Guid.NewGuid(),
@@ -203,12 +206,12 @@ namespace Colhetiva.Controllers
 
                 await _enderecoService.Salvar(endereco);
 
-                // criar organiza√ß√£o
+                // criar organizaÁ„o
                 var organization = new Organization
                 {
                     Id = Guid.NewGuid(),
                     Nome = model.Nome,
-                    Cnpj = model.Endereco?.Cep ?? "", // se tiver um campo CNPJ no DTO, use-o; aqui uso Cep temporariamente se DTO n√£o tiver CNPJ
+                    Cnpj = string.Empty, // se DTO tiver CNPJ, atribua aqui (model.Cnpj)
                     Tipo = model.TipoOrganizacao ?? string.Empty,
                     EnderecoId = endereco.Id,
                     Endereco = endereco
@@ -217,11 +220,12 @@ namespace Colhetiva.Controllers
                 await _db.Organizations.AddAsync(organization);
                 await _db.SaveChangesAsync();
 
-                // criar usu√°rio respons√°vel vinculado √† organiza√ß√£o
+                // criar usu·rio respons·vel vinculado ‡ organizaÁ„o
                 var usuario = new Usuario
                 {
+                    Id = Guid.NewGuid(),
                     Nome = model.Nome,
-                    CPF = "",
+                    CPF = string.Empty, // CPF n„o exigido para organizaÁ„o respons·vel
                     Email = model.Email,
                     Password = model.Password,
                     EnderecoId = endereco.Id,
@@ -229,18 +233,22 @@ namespace Colhetiva.Controllers
                     OrganizationId = organization.Id
                 };
 
-                await _usuarioService.Salvar(usuario);
+                // Persistir usu·rio direto no DbContext para n„o acionar a validaÁ„o de CPF em UsuarioService
+                await _db.Usuarios.AddAsync(usuario);
+                await _db.SaveChangesAsync();
 
-                // promover usercontext para ADMIN da organiza√ß√£o
-                var uc = await _db.UserContexts.FirstOrDefaultAsync(x => x.UsuarioId == usuario.Id);
-                if (uc != null)
+                // criar UserContext como ADMIN
+                var uc = new UserContext
                 {
-                    uc.Role = Role.ADMIN;
-                    uc.HortaId = null;
-                    await _db.SaveChangesAsync();
-                }
+                    Id = Guid.NewGuid(),
+                    UsuarioId = usuario.Id,
+                    Role = Role.ADMIN,
+                    HortaId = null
+                };
+                await _db.UserContexts.AddAsync(uc);
+                await _db.SaveChangesAsync();
 
-                TempData["MensagemSucesso"] = "Organiza√ß√£o cadastrada com sucesso! Fa√ßa login para acessar o painel administrativo.";
+                TempData["MensagemSucesso"] = "OrganizaÁ„o cadastrada com sucesso! FaÁa login para acessar o painel administrativo.";
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
@@ -261,8 +269,8 @@ namespace Colhetiva.Controllers
         {
             if (ex is InvalidOperationException invalidOp)
             {
-                if (invalidOp.Message.Contains("Email j√° est√° em uso"))
-                    return "Este e-mail j√° est√° cadastrado. Tente fazer login ou utilize outro e-mail.";
+                if (invalidOp.Message.Contains("Email j· est· em uso"))
+                    return "Este e-mail j· est· cadastrado. Tente fazer login ou utilize outro e-mail.";
                 return invalidOp.Message;
             }
 
@@ -272,15 +280,47 @@ namespace Colhetiva.Controllers
             var innerMessage = ex.InnerException?.Message ?? ex.Message;
 
             if (innerMessage.Contains("duplicate key") || innerMessage.Contains("unique"))
-                return "J√° existe um registro com esses dados. Verifique se o e-mail j√° est√° cadastrado.";
+                return "J· existe um registro com esses dados. Verifique se o e-mail j· est· cadastrado.";
 
             if (innerMessage.Contains("foreign key") || innerMessage.Contains("CidadeId"))
-                return "A cidade selecionada n√£o existe. Por favor, selecione uma cidade v√°lida.";
+                return "A cidade selecionada n„o existe. Por favor, selecione uma cidade v·lida.";
 
             if (innerMessage.Contains("entity changes") || innerMessage.Contains("DbUpdate"))
-                return "Erro ao salvar no banco de dados. Verifique os campos obrigat√≥rios.";
+                return "Erro ao salvar no banco de dados. Verifique os campos obrigatÛrios.";
 
             return $"Erro: {innerMessage}";
+        }
+        // Substitua apenas o mÈtodo Index existente por este
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            // ObtÈm todas as hortas via serviÁo
+            var todasHortas = await _hortaService.GetAllAsync();
+
+            // Se houver usu·rio logado, tenta filtrar por OrganizationId vinculada ao usu·rio
+            var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
+            if (!string.IsNullOrEmpty(usuarioIdStr))
+            {
+                if (Guid.TryParse(usuarioIdStr, out var usuarioId))
+                {
+                    var usuario = await _db.Usuarios
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(u => u.Id == usuarioId);
+
+                    if (usuario != null && usuario.OrganizationId.HasValue)
+                    {
+                        var orgId = usuario.OrganizationId.Value;
+                        var hortasDaOrg = todasHortas
+                            .Where(h => h.OrganizationId.HasValue && h.OrganizationId.Value == orgId)
+                            .ToList();
+
+                        return View(hortasDaOrg);
+                    }
+                }
+            }
+
+            // Se n„o houver usu·rio com organizaÁ„o, exibe todas (ou mantenha polÌtica desejada)
+            return View(todasHortas);
         }
     }
 }

@@ -40,11 +40,37 @@ public class CadastroHortasController : Controller
         return PartialView("_LinhaFerramenta", new FerramentaLinhaEditorModel { Index = i, Linha = new FerramentaLinhaViewModel() });
     }
 
+    // Substitua apenas o método Index existente por este
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var hortas = await _hortaService.GetAllAsync();
-        return View(hortas);
+        // Obtém todas as hortas via serviço
+        var todasHortas = await _hortaService.GetAllAsync();
+
+        // Se houver usuário logado, tenta filtrar por OrganizationId vinculada ao usuário
+        var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
+        if (!string.IsNullOrEmpty(usuarioIdStr))
+        {
+            if (Guid.TryParse(usuarioIdStr, out var usuarioId))
+            {
+                var usuario = await _db.Usuarios
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Id == usuarioId);
+
+                if (usuario != null && usuario.OrganizationId.HasValue)
+                {
+                    var orgId = usuario.OrganizationId.Value;
+                    var hortasDaOrg = todasHortas
+                        .Where(h => h.OrganizationId.HasValue && h.OrganizationId.Value == orgId)
+                        .ToList();
+
+                    return View(hortasDaOrg);
+                }
+            }
+        }
+
+        // Se não houver usuário com organização, exibe todas (ou mantenha política desejada)
+        return View(todasHortas);
     }
 
     [HttpGet]
