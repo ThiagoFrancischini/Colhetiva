@@ -1,15 +1,22 @@
 ﻿@model List<Colhetiva.Core.Entities.Solicitacao>
+@using Colhetiva.Core.Enums
 @{
-    ViewData["Title"] = "Gerenciar Solicitações";
+    ViewData["Title"] = "Painel do Gestor";
     var emprestimos = ViewBag.PendingEmprestimos as List<Colhetiva.Core.Entities.Emprestimo> ?? new();
     var participantes = ViewBag.Participantes as List<Colhetiva.Core.Entities.Solicitacao> ?? new();
+    var totalParticipants = (int?)(ViewBag.TotalParticipants) ?? 0;
+    var taxaOcupacao = (decimal?)(ViewBag.TaxaOcupacao) ?? 0m;
+    var ferramentasEmUso = (int?)(ViewBag.FerramentasEmUso) ?? 0;
+    var inventario = ViewBag.Inventario as List<Colhetiva.Core.Entities.Ferramenta> ?? new();
+
+    var totalPendentes = Model.Count + emprestimos.Count;
 }
 
 <div class="ch-page-header mb-4">
     <div class="ch-page-header__left">
         <div>
-            <h1 class="ch-page-header__title">Gerenciar Solicitações</h1>
-            <p class="ch-page-header__sub">Canteiros, participantes e empréstimos de ferramentas das suas hortas</p>
+            <h1 class="ch-page-header__title">Painel do Gestor</h1>
+            <p class="ch-page-header__sub">Visão geral de participantes, aprovações pendentes e inventário</p>
         </div>
     </div>
     <a href="@Url.Action("Index", "Home")" class="btn-back"
@@ -31,20 +38,67 @@
     <div class="alert alert-info ch-alert-animate mb-3">@TempData["MensagemInfo"]</div>
 }
 
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;">
+    <div class="metric-card">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="metric-label">Participantes ativos</div>
+                <div class="metric-num">@totalParticipants</div>
+            </div>
+            <span style="font-size:2rem;opacity:.5;">👥</span>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="metric-label">Taxa de ocupação</div>
+                <div class="metric-num">@taxaOcupacao<small style="font-size:1rem;font-weight:500;color:var(--gray-400);">%</small></div>
+            </div>
+            <span style="font-size:2rem;opacity:.5;">🪴</span>
+        </div>
+        @if (taxaOcupacao > 0)
+        {
+            <div style="margin-top:.75rem;height:6px;background:var(--gray-200);border-radius:99px;overflow:hidden;">
+                <div style="height:100%;width:@(taxaOcupacao)%;background:var(--green-mid);border-radius:99px;transition:width .4s;"></div>
+            </div>
+        }
+    </div>
+    <div class="metric-card">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="metric-label">Ferramentas em uso</div>
+                <div class="metric-num">@ferramentasEmUso</div>
+            </div>
+            <span style="font-size:2rem;opacity:.5;">🔧</span>
+        </div>
+    </div>
+</div>
+
+@if (totalPendentes > 0)
+{
+    <div class="alert alert-warning mb-4" style="border-left-width:5px;">
+        ⚠️ Você tem <strong>@totalPendentes aprovação@(totalPendentes != 1 ? "ões" : "")</strong> pendente@(totalPendentes != 1 ? "s" : "") aguardando sua revisão.
+    </div>
+}
+
 <div class="panel mb-4">
     <div class="panel-header">
-        <span class="panel-title">Solicitações pendentes de canteiros</span>
+        <span class="panel-title">Solicitações de canteiros</span>
         @if (Model.Any())
         {
             <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint);border:1.5px solid var(--status-maint);">
                 @Model.Count pendente@(Model.Count != 1 ? "s" : "")
             </span>
         }
+        else
+        {
+            <span class="badge badge-free">✓ Em dia</span>
+        }
     </div>
     @if (!Model.Any())
     {
         <div class="py-4 text-center text-muted" style="font-size:.9rem;">
-            Nenhuma solicitação pendente para suas hortas.
+            Nenhuma solicitação pendente de canteiro.
         </div>
     }
     else
@@ -53,10 +107,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Horta</th>
-                        <th>Canteiro</th>
                         <th>Solicitante</th>
-                        <th style="width:130px;">Data</th>
+                        <th>Canteiro</th>
+                        <th>Horta</th>
+                        <th style="width:130px;">Data do Pedido</th>
                         <th style="width:200px;text-align:center;">Ações</th>
                     </tr>
                 </thead>
@@ -64,9 +118,9 @@
                     @foreach (var s in Model)
                     {
                         <tr>
-                            <td><strong>@s.Canteiro.Horta?.Nome</strong></td>
+                            <td><strong>@s.Usuario?.Nome</strong></td>
                             <td>@s.Canteiro.Identificacao</td>
-                            <td>@s.Usuario?.Nome</td>
+                            <td>@s.Canteiro.Horta?.Nome</td>
                             <td style="font-size:.8rem;color:var(--gray-400);">@s.DataPedido.ToLocalTime().ToString("g")</td>
                             <td class="text-center">
                                 <div class="table-actions justify-content-center">
@@ -83,7 +137,7 @@
                                         <input type="hidden" name="solicitacaoId" value="@s.Id" />
                                         <button type="submit" class="btn btn-sm"
                                                 style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
-                                            ✕ Reprovar
+                                            ✕ Recusar
                                         </button>
                                     </form>
                                 </div>
@@ -98,71 +152,22 @@
 
 <div class="panel mb-4">
     <div class="panel-header">
-        <span class="panel-title">Participantes atuais (canteiros)</span>
-        @if (participantes.Any())
-        {
-            <span class="badge badge-free">@participantes.Count ativo@(participantes.Count != 1 ? "s" : "")</span>
-        }
-    </div>
-    @if (!participantes.Any())
-    {
-        <div class="py-4 text-center text-muted" style="font-size:.9rem;">
-            Nenhum participante no momento.
-        </div>
-    }
-    else
-    {
-        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Horta</th>
-                        <th>Canteiro</th>
-                        <th>Participante</th>
-                        <th style="width:130px;">Desde</th>
-                        <th style="width:170px;text-align:center;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in participantes)
-                    {
-                        <tr>
-                            <td><strong>@p.Canteiro.Horta?.Nome</strong></td>
-                            <td>@p.Canteiro.Identificacao</td>
-                            <td>@p.Usuario?.Nome</td>
-                            <td style="font-size:.8rem;color:var(--gray-400);">@p.DataPedido.ToLocalTime().ToString("g")</td>
-                            <td class="text-center">
-                                <form asp-action="Sair" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="solicitacaoId" value="@p.Id" />
-                                    <button type="submit" class="btn btn-sm"
-                                            style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
-                                        ✕ Remover / Sair
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-</div>
-
-<div class="panel mb-4">
-    <div class="panel-header">
-        <span class="panel-title">🔧 Pedidos de empréstimo pendentes (ferramentas)</span>
+        <span class="panel-title">Pedidos de empréstimo pendentes</span>
         @if (emprestimos.Any())
         {
             <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint);border:1.5px solid var(--status-maint);">
                 @emprestimos.Count pendente@(emprestimos.Count != 1 ? "s" : "")
             </span>
         }
+        else
+        {
+            <span class="badge badge-free">✓ Em dia</span>
+        }
     </div>
     @if (!emprestimos.Any())
     {
         <div class="py-4 text-center text-muted" style="font-size:.9rem;">
-            Nenhum pedido de empréstimo pendente para suas hortas.
+            Nenhum pedido pendente de empréstimo.
         </div>
     }
     else
@@ -171,9 +176,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Horta</th>
-                        <th>Ferramenta</th>
                         <th>Solicitante</th>
+                        <th>Ferramenta</th>
+                        <th>Horta</th>
                         <th style="width:130px;">Pedido</th>
                         <th style="width:200px;text-align:center;">Ações</th>
                     </tr>
@@ -182,9 +187,9 @@
                     @foreach (var e in emprestimos)
                     {
                         <tr>
-                            <td><strong>@e.Ferramenta.Horta?.Nome</strong></td>
+                            <td><strong>@e.Usuario?.Nome</strong></td>
                             <td>@e.Ferramenta.Nome</td>
-                            <td>@e.Usuario?.Nome</td>
+                            <td>@e.Ferramenta.Horta?.Nome</td>
                             <td style="font-size:.8rem;color:var(--gray-400);">@e.DataRetirada.ToLocalTime().ToString("g")</td>
                             <td class="text-center">
                                 <div class="table-actions justify-content-center">
@@ -201,13 +206,153 @@
                                         <input type="hidden" name="emprestimoId" value="@e.Id" />
                                         <button type="submit" class="btn btn-sm"
                                                 style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
-                                            ✕ Reprovar
+                                            ✕ Recusar
                                         </button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="panel mb-4">
+    <div class="panel-header">
+        <span class="panel-title">Participantes atuais</span>
+        @if (participantes.Any())
+        {
+            <span class="badge badge-free">@participantes.Count ativo@(participantes.Count != 1 ? "s" : "")</span>
+        }
+    </div>
+    @if (!participantes.Any())
+    {
+        <div class="py-4 text-center text-muted" style="font-size:.9rem;">
+            Nenhum participante com canteiro ativo no momento.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Canteiro</th>
+                        <th>Horta</th>
+                        <th style="width:130px;">Desde</th>
+                        <th style="width:160px;text-align:center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in participantes)
+                    {
+                        <tr>
+                            <td><strong>@p.Usuario?.Nome</strong></td>
+                            <td>@p.Canteiro.Identificacao</td>
+                            <td>@p.Canteiro.Horta?.Nome</td>
+                            <td style="font-size:.8rem;color:var(--gray-400);">@p.DataPedido.ToLocalTime().ToString("g")</td>
+                            <td class="text-center">
+                                <form asp-action="Sair" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="solicitacaoId" value="@p.Id" />
+                                    <button type="submit" class="btn btn-sm"
+                                            style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
+                                        ✕ Remover
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="panel mb-4">
+    <div class="panel-header">
+        <span class="panel-title">Gestão de inventário</span>
+        @if (inventario.Any())
+        {
+            <span class="badge" style="background:var(--info-bg);color:var(--info);border:1.5px solid var(--info);">
+                @inventario.Count item@(inventario.Count != 1 ? "s" : "")
+            </span>
+        }
+    </div>
+    @if (!inventario.Any())
+    {
+        <div class="py-4 text-center text-muted" style="font-size:.9rem;">
+            Nenhuma ferramenta cadastrada no inventário.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ferramenta</th>
+                        <th>Horta</th>
+                        <th style="width:160px;">Status</th>
+                        <th style="width:200px;text-align:center;">Ações rápidas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in inventario)
+                    {
+                        <tr>
+                            <td>
+                                <input form="form-update-@f.Id" name="nome" value="@f.Nome"
+                                       class="form-control form-control-sm" style="max-width:280px;" />
+                            </td>
+                            <td style="font-size:.9rem;">@f.Horta?.Nome</td>
+                            <td>
+                                <select form="form-update-@f.Id" name="status"
+                                        class="form-select form-select-sm" style="max-width:150px;">
+                                    @if (f.Status == StatusFerramenta.Disponivel)
+                                    {
+                                        <option value="Disponivel" selected>Disponível</option>
+                                        <option value="EmUso">Em Uso</option>
+                                        <option value="Inativa">Inativa</option>
+                                    }
+                                    else if (f.Status == StatusFerramenta.EmUso)
+                                    {
+                                        <option value="Disponivel">Disponível</option>
+                                        <option value="EmUso" selected>Em Uso</option>
+                                        <option value="Inativa">Inativa</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="Disponivel">Disponível</option>
+                                        <option value="EmUso">Em Uso</option>
+                                        <option value="Inativa" selected>Inativa</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="text-center">
+                                <div class="table-actions justify-content-center">
+                                    <form id="form-update-@f.Id" asp-action="UpdateFerramenta" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="ferramentaId" value="@f.Id" />
+                                        <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
+                                    </form>
+                                    <form asp-action="ToggleFerramentaActive" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="ferramentaId" value="@f.Id" />
+                                        <button type="submit" class="btn btn-sm"
+                                                style="@(f.Status == StatusFerramenta.Inativa
+                                                                                                    ? "background:var(--status-free-bg);color:var(--status-free);border:1.5px solid var(--status-free);font-weight:700;"
+                                                                                                    : "background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;")">
+                                    @(f.Status == StatusFerramenta.Inativa ? "↑ Ativar" : "↓ Inativar")
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                                }
                 </tbody>
             </table>
         </div>
