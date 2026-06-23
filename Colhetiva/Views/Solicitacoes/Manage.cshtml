@@ -1,61 +1,215 @@
 ﻿@model List<Colhetiva.Core.Entities.Solicitacao>
 @{
     ViewData["Title"] = "Gerenciar Solicitações";
+    var emprestimos = ViewBag.PendingEmprestimos as List<Colhetiva.Core.Entities.Emprestimo> ?? new();
+    var participantes = ViewBag.Participantes as List<Colhetiva.Core.Entities.Solicitacao> ?? new();
 }
 
-<h2>Solicitações pendentes</h2>
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">Gerenciar Solicitações</h1>
+            <p class="ch-page-header__sub">Canteiros, participantes e empréstimos de ferramentas das suas hortas</p>
+        </div>
+    </div>
+    <a href="@Url.Action("Index", "Home")" class="btn-back"
+       style="border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.9);background:transparent;">
+        ← Voltar
+    </a>
+</div>
 
 @if (TempData["MensagemSucesso"] != null)
 {
-    <div class="alert alert-success">@TempData["MensagemSucesso"]</div>
-}
-@if (TempData["MensagemInfo"] != null)
-{
-    <div class="alert alert-info">@TempData["MensagemInfo"]</div>
+    <div class="alert alert-success ch-alert-animate mb-3">@TempData["MensagemSucesso"]</div>
 }
 @if (TempData["MensagemErro"] != null)
 {
-    <div class="alert alert-danger">@TempData["MensagemErro"]</div>
+    <div class="alert alert-danger ch-alert-animate mb-3">@TempData["MensagemErro"]</div>
+}
+@if (TempData["MensagemInfo"] != null)
+{
+    <div class="alert alert-info ch-alert-animate mb-3">@TempData["MensagemInfo"]</div>
 }
 
-@if (!Model.Any())
-{
-    <div class="alert alert-secondary">Nenhuma solicitação pendente para suas hortas.</div>
-}
-else
-{
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>Horta</th>
-                <th>Canteiro</th>
-                <th>Solicitante</th>
-                <th>Data</th>
-                <th style="width:200px;text-align:center;">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var s in Model)
-            {
-                <tr>
-                    <td>@s.Canteiro.Horta?.Nome</td>
-                    <td>@s.Canteiro.Identificacao</td>
-                    <td>@s.Usuario?.Nome</td>
-                    <td>@s.DataPedido.ToLocalTime().ToString("g")</td>
-                    <td class="text-center">
-                        <form asp-action="Aprovar" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="solicitacaoId" value="@s.Id" />
-                            <button type="submit" class="btn btn-success btn-sm">Aprovar</button>
-                        </form>
-                        <form asp-action="Reprovar" method="post" class="d-inline ms-2">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="solicitacaoId" value="@s.Id" />
-                            <button type="submit" class="btn btn-danger btn-sm">Reprovar</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<div class="panel mb-4">
+    <div class="panel-header">
+        <span class="panel-title">Solicitações pendentes de canteiros</span>
+        @if (Model.Any())
+        {
+            <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint);border:1.5px solid var(--status-maint);">
+                @Model.Count pendente@(Model.Count != 1 ? "s" : "")
+            </span>
+        }
+    </div>
+    @if (!Model.Any())
+    {
+        <div class="py-4 text-center text-muted" style="font-size:.9rem;">
+            Nenhuma solicitação pendente para suas hortas.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Horta</th>
+                        <th>Canteiro</th>
+                        <th>Solicitante</th>
+                        <th style="width:130px;">Data</th>
+                        <th style="width:200px;text-align:center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td><strong>@s.Canteiro.Horta?.Nome</strong></td>
+                            <td>@s.Canteiro.Identificacao</td>
+                            <td>@s.Usuario?.Nome</td>
+                            <td style="font-size:.8rem;color:var(--gray-400);">@s.DataPedido.ToLocalTime().ToString("g")</td>
+                            <td class="text-center">
+                                <div class="table-actions justify-content-center">
+                                    <form asp-action="Aprovar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="solicitacaoId" value="@s.Id" />
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background:var(--status-free-bg);color:var(--status-free);border:1.5px solid var(--status-free);font-weight:700;">
+                                            ✓ Aprovar
+                                        </button>
+                                    </form>
+                                    <form asp-action="Reprovar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="solicitacaoId" value="@s.Id" />
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
+                                            ✕ Reprovar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="panel mb-4">
+    <div class="panel-header">
+        <span class="panel-title">Participantes atuais (canteiros)</span>
+        @if (participantes.Any())
+        {
+            <span class="badge badge-free">@participantes.Count ativo@(participantes.Count != 1 ? "s" : "")</span>
+        }
+    </div>
+    @if (!participantes.Any())
+    {
+        <div class="py-4 text-center text-muted" style="font-size:.9rem;">
+            Nenhum participante no momento.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Horta</th>
+                        <th>Canteiro</th>
+                        <th>Participante</th>
+                        <th style="width:130px;">Desde</th>
+                        <th style="width:170px;text-align:center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in participantes)
+                    {
+                        <tr>
+                            <td><strong>@p.Canteiro.Horta?.Nome</strong></td>
+                            <td>@p.Canteiro.Identificacao</td>
+                            <td>@p.Usuario?.Nome</td>
+                            <td style="font-size:.8rem;color:var(--gray-400);">@p.DataPedido.ToLocalTime().ToString("g")</td>
+                            <td class="text-center">
+                                <form asp-action="Sair" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="solicitacaoId" value="@p.Id" />
+                                    <button type="submit" class="btn btn-sm"
+                                            style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
+                                        ✕ Remover / Sair
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="panel mb-4">
+    <div class="panel-header">
+        <span class="panel-title">🔧 Pedidos de empréstimo pendentes (ferramentas)</span>
+        @if (emprestimos.Any())
+        {
+            <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint);border:1.5px solid var(--status-maint);">
+                @emprestimos.Count pendente@(emprestimos.Count != 1 ? "s" : "")
+            </span>
+        }
+    </div>
+    @if (!emprestimos.Any())
+    {
+        <div class="py-4 text-center text-muted" style="font-size:.9rem;">
+            Nenhum pedido de empréstimo pendente para suas hortas.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Horta</th>
+                        <th>Ferramenta</th>
+                        <th>Solicitante</th>
+                        <th style="width:130px;">Pedido</th>
+                        <th style="width:200px;text-align:center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in emprestimos)
+                    {
+                        <tr>
+                            <td><strong>@e.Ferramenta.Horta?.Nome</strong></td>
+                            <td>@e.Ferramenta.Nome</td>
+                            <td>@e.Usuario?.Nome</td>
+                            <td style="font-size:.8rem;color:var(--gray-400);">@e.DataRetirada.ToLocalTime().ToString("g")</td>
+                            <td class="text-center">
+                                <div class="table-actions justify-content-center">
+                                    <form asp-controller="Emprestimos" asp-action="Aprovar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="emprestimoId" value="@e.Id" />
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background:var(--status-free-bg);color:var(--status-free);border:1.5px solid var(--status-free);font-weight:700;">
+                                            ✓ Aprovar
+                                        </button>
+                                    </form>
+                                    <form asp-controller="Emprestimos" asp-action="Reprovar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="emprestimoId" value="@e.Id" />
+                                        <button type="submit" class="btn btn-sm"
+                                                style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
+                                            ✕ Reprovar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

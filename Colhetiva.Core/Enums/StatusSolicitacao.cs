@@ -4,6 +4,7 @@ namespace Colhetiva.Core.Enums
     {
         Pendente = 1,
         Aprovado = 2,
-        Recusado = 3
+        Recusado = 3,
+        Cancelado = 4
     }
 }
