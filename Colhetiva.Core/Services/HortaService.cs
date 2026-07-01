@@ -55,17 +55,27 @@ namespace Colhetiva.Core.Services
                 CidadeId = input.Endereco.CidadeId
             };
 
-
             await _unitOfWork.EnderecoRepository.Salvar(endereco);
 
             var hortaId = Guid.NewGuid();
+
+            // tenta obter organizationId do usuário responsável (se existir)
+            Guid? organizationId = null;
+            if (input.UsuarioId != Guid.Empty)
+            {
+                var usuario = await _unitOfWork.UsuarioRepository.GetById(input.UsuarioId);
+                if (usuario != null)
+                    organizationId = usuario.OrganizationId;
+            }
+
             var horta = new Horta
             {
                 Id = hortaId,
                 Nome = input.Nome,
                 Regras = input.Regras ?? string.Empty,
                 EnderecoId = enderecoId,
-                UsuarioId = input.UsuarioId
+                UsuarioId = input.UsuarioId,
+                OrganizationId = organizationId
             };
 
             await _unitOfWork.HortaRepository.Salvar(horta);
@@ -122,13 +132,23 @@ namespace Colhetiva.Core.Services
             };
             await _unitOfWork.EnderecoRepository.Salvar(endereco);
 
+            // tenta obter organizationId do usuário responsável (se existir)
+            Guid? organizationId = existente.OrganizationId;
+            if (input.UsuarioId != Guid.Empty)
+            {
+                var usuario = await _unitOfWork.UsuarioRepository.GetById(input.UsuarioId);
+                if (usuario != null)
+                    organizationId = usuario.OrganizationId;
+            }
+
             var horta = new Horta
             {
                 Id = input.Id,
                 Nome = input.Nome,
                 Regras = input.Regras ?? string.Empty,
                 EnderecoId = enderecoId,
-                UsuarioId = input.UsuarioId
+                UsuarioId = input.UsuarioId,
+                OrganizationId = organizationId
             };
             await _unitOfWork.HortaRepository.Salvar(horta);
 

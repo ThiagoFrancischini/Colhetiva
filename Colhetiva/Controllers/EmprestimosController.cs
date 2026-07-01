@@ -110,8 +110,39 @@ public class EmprestimosController : Controller
         await _db.Emprestimos.AddAsync(emprestimo);
         await _db.SaveChangesAsync();
 
+        // Pedido salvo com Status = Pendente — gestor verá imediatamente em Manage
         TempData["MensagemSucesso"] = "Pedido de empréstimo enviado. Aguarde a aprovação do responsável.";
         return RedirectToAction("Index", new { hortaId });
+    }
+
+    // ---- NOVA AÇÃO: Manage (lista pedidos pendentes visíveis ao gestor) ----
+    [HttpGet]
+    public async Task<IActionResult> Manage()
+    {
+        var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
+        if (string.IsNullOrEmpty(usuarioIdStr))
+        {
+            TempData["MensagemInfo"] = "Faça login para acessar pedidos de empréstimo.";
+            return RedirectToAction("Login", "Account");
+        }
+        var usuarioId = Guid.Parse(usuarioIdStr);
+
+        // carregar usuário para obter OrganizationId
+        var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
+
+        var pedidos = await _db.Emprestimos
+            .Include(e => e.Ferramenta)
+                .ThenInclude(f => f.Horta)
+            .Include(e => e.Usuario)
+            .Where(e => e.Status == StatusEmprestimo.Pendente &&
+                       (e.Ferramenta.Horta.UsuarioId == usuarioId ||
+                        (usuario != null && usuario.OrganizationId.HasValue &&
+                         e.Ferramenta.Horta.OrganizationId.HasValue &&
+                         e.Ferramenta.Horta.OrganizationId == usuario.OrganizationId)))
+            .OrderBy(e => e.DataRetirada)
+            .ToListAsync();
+
+        return View(pedidos);
     }
 
     [HttpPost]
@@ -126,13 +157,20 @@ public class EmprestimosController : Controller
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
 
+        var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
+
         var e = await _db.Emprestimos
             .Include(x => x.Ferramenta)
                 .ThenInclude(f => f.Horta)
             .FirstOrDefaultAsync(x => x.Id == emprestimoId);
 
         if (e == null) return NotFound();
-        if (e.Ferramenta.Horta.UsuarioId != usuarioId) return Forbid();
+        var horta = e.Ferramenta?.Horta;
+        if (horta == null) return NotFound();
+
+        var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && horta.OrganizationId.HasValue && usuario.OrganizationId == horta.OrganizationId;
+        if (horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+
         if (e.Status != StatusEmprestimo.Pendente)
         {
             TempData["MensagemInfo"] = "Pedido já processado.";
@@ -166,13 +204,20 @@ public class EmprestimosController : Controller
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
 
+        var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
+
         var e = await _db.Emprestimos
             .Include(x => x.Ferramenta)
                 .ThenInclude(f => f.Horta)
             .FirstOrDefaultAsync(x => x.Id == emprestimoId);
 
         if (e == null) return NotFound();
-        if (e.Ferramenta.Horta.UsuarioId != usuarioId) return Forbid();
+        var horta = e.Ferramenta?.Horta;
+        if (horta == null) return NotFound();
+
+        var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && horta.OrganizationId.HasValue && usuario.OrganizationId == horta.OrganizationId;
+        if (horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+
         if (e.Status != StatusEmprestimo.Pendente)
         {
             TempData["MensagemInfo"] = "Pedido já processado.";

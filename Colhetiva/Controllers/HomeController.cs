@@ -10,29 +10,17 @@ namespace Colhetiva.Controllers
     public class HomeController : Controller
     {
         private readonly IHortaService _hortaService;
-        private readonly ColhetivaDbContext _db;
 
-        public HomeController(IHortaService hortaService, ColhetivaDbContext db)
+        public HomeController(IHortaService hortaService)
         {
             _hortaService = hortaService;
-            _db = db;
         }
 
         public async Task<IActionResult> Index(string nome, string cidade)
         {
+            // Busca as hortas aplicando os filtros de pesquisa (nome/cidade).
+            // NÃO filtramos por organização/usuário aqui — exibimos todas as hortas.
             var hortas = await _hortaService.FiltrarAsync(nome, cidade);
-
-            var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
-            if (!string.IsNullOrEmpty(usuarioIdStr))
-            {
-                var usuarioId = Guid.Parse(usuarioIdStr);
-                var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.Id == usuarioId);
-                if (usuario != null && usuario.OrganizationId.HasValue)
-                {
-                    var orgId = usuario.OrganizationId.Value;
-                    hortas = hortas.Where(h => h.OrganizationId.HasValue && h.OrganizationId.Value == orgId).ToList();
-                }
-            }
 
             var vm = new HomeDto
             {
