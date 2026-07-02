@@ -154,7 +154,7 @@ public class EmprestimosController : Controller
         if (e.Status != StatusEmprestimo.Pendente)
         {
             TempData["MensagemInfo"] = "Pedido j� processado.";
-            return RedirectToAction("Details", "Horta", new { id = horta.Id });
+            return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
         e.Status = StatusEmprestimo.Aprovado;
@@ -169,7 +169,7 @@ public class EmprestimosController : Controller
         await _db.SaveChangesAsync();
 
         TempData["MensagemSucesso"] = "Pedido aprovado. Ferramenta marcada como em uso.";
-        return RedirectToAction("Details", "Horta", new { id = horta.Id });
+        return RedirectToAction("Manage", "Horta", new { id = horta.Id });
     }
 
     [HttpPost]
@@ -196,14 +196,14 @@ public class EmprestimosController : Controller
         if (e.Status != StatusEmprestimo.Pendente)
         {
             TempData["MensagemInfo"] = "Pedido j� processado.";
-            return RedirectToAction("Details", "Horta", new { id = horta.Id });
+            return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
         e.Status = StatusEmprestimo.Recusado;
         await _db.SaveChangesAsync();
 
         TempData["MensagemSucesso"] = "Pedido reprovado.";
-        return RedirectToAction("Details", "Horta", new { id = horta.Id });
+        return RedirectToAction("Manage", "Horta", new { id = horta.Id });
     }
 
     [HttpPost]

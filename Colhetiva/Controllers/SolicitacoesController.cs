@@ -209,7 +209,7 @@ namespace Colhetiva.Controllers
             if (s.Status != StatusSolicitacao.Pendente)
             {
                 TempData["MensagemInfo"] = "Solicita��o j� processada.";
-                return RedirectToAction("Details", "Horta", new { id = horta.Id });
+                return RedirectToAction("Manage", "Horta", new { id = horta.Id });
             }
 
             s.Status = StatusSolicitacao.Aprovado;
@@ -223,7 +223,7 @@ namespace Colhetiva.Controllers
             await _db.SaveChangesAsync();
 
             TempData["MensagemSucesso"] = "Solicita��o aprovada. Participante confirmado.";
-            return RedirectToAction("Details", "Horta", new { id = horta.Id });
+            return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
         [HttpPost]
@@ -250,14 +250,14 @@ namespace Colhetiva.Controllers
             if (s.Status != StatusSolicitacao.Pendente)
             {
                 TempData["MensagemInfo"] = "Solicita��o j� processada.";
-                return RedirectToAction("Details", "Horta", new { id = horta.Id });
+                return RedirectToAction("Manage", "Horta", new { id = horta.Id });
             }
 
             s.Status = StatusSolicitacao.Recusado;
             await _db.SaveChangesAsync();
 
             TempData["MensagemSucesso"] = "Solicita��o recusada.";
-            return RedirectToAction("Details", "Horta", new { id = horta.Id });
+            return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
         [HttpPost]
@@ -284,7 +284,7 @@ namespace Colhetiva.Controllers
             if (s.Status != StatusSolicitacao.Aprovado)
             {
                 TempData["MensagemInfo"] = "Este participante n�o est� mais ativo neste canteiro.";
-                return RedirectToAction("Details", "Horta", new { id = horta.Id });
+                return RedirectToAction("Manage", "Horta", new { id = horta.Id });
             }
 
             s.Status = StatusSolicitacao.Cancelado;
@@ -293,7 +293,7 @@ namespace Colhetiva.Controllers
             await _db.SaveChangesAsync();
 
             TempData["MensagemSucesso"] = "Participante removido do canteiro.";
-            return RedirectToAction("Details", "Horta", new { id = horta.Id });
+            return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
     }
 

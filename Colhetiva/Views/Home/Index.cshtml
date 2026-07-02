@@ -18,7 +18,29 @@
     </div>
 </div>
 
-<div class="section-header mt-4">
+@if (!string.IsNullOrEmpty(Model.NomeUsuario))
+{
+    <div class="quick-actions-grid">
+        <a href="@Url.Action("Diario", "RegistroAtividades")" class="quick-action-btn">
+            <span class="quick-action-btn__icon" aria-hidden="true">📅</span>
+            Agenda / Meu Diário
+        </a>
+        <a href="@Url.Action("Meus", "Emprestimos")" class="quick-action-btn">
+            <span class="quick-action-btn__icon" aria-hidden="true">🔧</span>
+            Meus Empréstimos
+        </a>
+        <a href="@Url.Action("Index", "Profile")" class="quick-action-btn">
+            <span class="quick-action-btn__icon" aria-hidden="true">👤</span>
+            Meus Dados
+        </a>
+        <a href="#hortas-grid" class="quick-action-btn">
+            <span class="quick-action-btn__icon" aria-hidden="true">🌱</span>
+            Ver Hortas
+        </a>
+    </div>
+}
+
+<div class="section-header mt-4" id="hortas-grid">
     <h2 class="section-title" style="margin:0;">
         Hortas Cadastradas
         <span class="hortas-count-badge">@Model.Hortas.Count</span>

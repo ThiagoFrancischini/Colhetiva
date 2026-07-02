@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "colhetiva-web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Colhetiva/Colhetiva.csproj", "--urls", "http://localhost:5271"],
+      "port": 5271
+    }
+  ]
+}

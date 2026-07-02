@@ -63,37 +63,67 @@ namespace Colhetiva.Controllers
             ViewBag.PodeGerenciar = podeGerenciar;
             if (podeGerenciar)
             {
-                var solicitacoesPendentes = await _db.Solicitacoes
-                    .Include(s => s.Usuario)
-                    .Include(s => s.Canteiro)
-                    .Where(s => s.Status == StatusSolicitacao.Pendente && s.Canteiro.HortaId == id)
-                    .OrderBy(s => s.DataPedido)
-                    .ToListAsync();
+                var pendingSolicitacoes = await _db.Solicitacoes
+                    .CountAsync(s => s.Status == StatusSolicitacao.Pendente && s.Canteiro.HortaId == id);
+                var pendingEmprestimos = await _db.Emprestimos
+                    .CountAsync(e => e.Status == StatusEmprestimo.Pendente && e.Ferramenta.HortaId == id);
 
-                var participantesAtivos = await _db.Solicitacoes
-                    .Include(s => s.Usuario)
-                    .Include(s => s.Canteiro)
-                    .Where(s => s.Status == StatusSolicitacao.Aprovado && s.Canteiro.HortaId == id)
-                    .OrderBy(s => s.DataPedido)
-                    .ToListAsync();
-
-                var emprestimosPendentes = await _db.Emprestimos
-                    .Include(e => e.Usuario)
-                    .Include(e => e.Ferramenta)
-                    .Where(e => e.Status == StatusEmprestimo.Pendente && e.Ferramenta.HortaId == id)
-                    .OrderBy(e => e.DataRetirada)
-                    .ToListAsync();
-
-                var totalCanteiros = horta.Canteiros.Count;
-                var occupiedCanteiros = horta.Canteiros.Count(c => c.Status == StatusCanteiro.Ocupado);
-
-                ViewBag.SolicitacoesPendentes = solicitacoesPendentes;
-                ViewBag.ParticipantesAtivos = participantesAtivos;
-                ViewBag.EmprestimosPendentes = emprestimosPendentes;
-                ViewBag.TotalParticipantsHorta = participantesAtivos.Count;
-                ViewBag.TaxaOcupacaoHorta = totalCanteiros == 0 ? 0m : Math.Round((decimal)occupiedCanteiros * 100m / totalCanteiros, 1);
-                ViewBag.FerramentasEmUsoHorta = horta.Ferramentas.Count(f => f.Status == StatusFerramenta.EmUso);
+                ViewBag.PendingManageCount = pendingSolicitacoes + pendingEmprestimos;
             }
+
+            return View(horta);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Manage(Guid id)
+        {
+            if (id == Guid.Empty)
+                return RedirectToAction("Index", "Home");
+
+            var horta = await _db.Hortas
+                .Include(h => h.Canteiros)
+                .Include(h => h.Ferramentas)
+                .FirstOrDefaultAsync(h => h.Id == id);
+
+            if (horta == null)
+                return NotFound();
+
+            if (!await _currentUser.CanManageHortaAsync(horta))
+            {
+                TempData["MensagemInfo"] = "Você não tem permissão para gerenciar esta horta.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            var solicitacoesPendentes = await _db.Solicitacoes
+                .Include(s => s.Usuario)
+                .Include(s => s.Canteiro)
+                .Where(s => s.Status == StatusSolicitacao.Pendente && s.Canteiro.HortaId == id)
+                .OrderBy(s => s.DataPedido)
+                .ToListAsync();
+
+            var participantesAtivos = await _db.Solicitacoes
+                .Include(s => s.Usuario)
+                .Include(s => s.Canteiro)
+                .Where(s => s.Status == StatusSolicitacao.Aprovado && s.Canteiro.HortaId == id)
+                .OrderBy(s => s.DataPedido)
+                .ToListAsync();
+
+            var emprestimosPendentes = await _db.Emprestimos
+                .Include(e => e.Usuario)
+                .Include(e => e.Ferramenta)
+                .Where(e => e.Status == StatusEmprestimo.Pendente && e.Ferramenta.HortaId == id)
+                .OrderBy(e => e.DataRetirada)
+                .ToListAsync();
+
+            var totalCanteiros = horta.Canteiros.Count;
+            var occupiedCanteiros = horta.Canteiros.Count(c => c.Status == StatusCanteiro.Ocupado);
+
+            ViewBag.SolicitacoesPendentes = solicitacoesPendentes;
+            ViewBag.ParticipantesAtivos = participantesAtivos;
+            ViewBag.EmprestimosPendentes = emprestimosPendentes;
+            ViewBag.TotalParticipantsHorta = participantesAtivos.Count;
+            ViewBag.TaxaOcupacaoHorta = totalCanteiros == 0 ? 0m : Math.Round((decimal)occupiedCanteiros * 100m / totalCanteiros, 1);
+            ViewBag.FerramentasEmUsoHorta = horta.Ferramentas.Count(f => f.Status == StatusFerramenta.EmUso);
 
             return View(horta);
         }

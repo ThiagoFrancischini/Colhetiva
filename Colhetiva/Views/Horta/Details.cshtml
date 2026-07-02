@@ -6,12 +6,7 @@
     var myActive = ViewBag.MyActiveEmprestimos as List<Guid> ?? new List<Guid>();
     var isAdminSession = string.Equals(Context.Session.GetString("UsuarioRole"), "ADMIN", StringComparison.OrdinalIgnoreCase);
     var podeGerenciar = (bool?)(ViewBag.PodeGerenciar) ?? false;
-    var solicitacoesPendentes = ViewBag.SolicitacoesPendentes as List<Colhetiva.Core.Entities.Solicitacao> ?? new();
-    var participantesAtivos = ViewBag.ParticipantesAtivos as List<Colhetiva.Core.Entities.Solicitacao> ?? new();
-    var emprestimosPendentes = ViewBag.EmprestimosPendentes as List<Colhetiva.Core.Entities.Emprestimo> ?? new();
-    var totalParticipantsHorta = (int?)(ViewBag.TotalParticipantsHorta) ?? 0;
-    var taxaOcupacaoHorta = (decimal?)(ViewBag.TaxaOcupacaoHorta) ?? 0m;
-    var ferramentasEmUsoHorta = (int?)(ViewBag.FerramentasEmUsoHorta) ?? 0;
+    var pendingManageCount = (int?)(ViewBag.PendingManageCount) ?? 0;
     var voltarUrl = isAdminSession ? Url.Action("Index", "CadastroHortas") : Url.Action("Index", "Home");
 }
 
@@ -101,6 +96,19 @@
                 <span class="panel-title">Ações rápidas</span>
             </div>
             <div class="panel-body d-flex flex-column gap-2">
+                @if (podeGerenciar)
+                {
+                    <a href="@Url.Action("Manage", "Horta", new { id = Model.Id })"
+                       class="btn btn-primary btn-block" style="justify-content:center;position:relative;">
+                        Gerenciar Horta
+                        @if (pendingManageCount > 0)
+                        {
+                            <span class="badge" style="background:#fff8e1;color:#b36200;border:1.5px solid #e6a817;margin-left:6px;">
+                                @pendingManageCount pendente@(pendingManageCount != 1 ? "s" : "")
+                            </span>
+                        }
+                    </a>
+                }
                 @if (!isAdminSession)
                 {
                     <a href="@Url.Action("Index", "Solicitacoes", new { hortaId = Model.Id })"
@@ -333,210 +341,3 @@
 
     </div>
 </div>
-
-@if (podeGerenciar)
-{
-    <div class="section-header mt-5 mb-3">
-        <h4 class="section-title m-0">Gestão desta horta</h4>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;">
-        <div class="metric-card">
-            <div class="metric-label">Participantes ativos</div>
-            <div class="metric-num">@totalParticipantsHorta</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Taxa de ocupação</div>
-            <div class="metric-num">@taxaOcupacaoHorta<small style="font-size:1rem;font-weight:500;color:var(--gray-400);">%</small></div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Ferramentas em uso</div>
-            <div class="metric-num">@ferramentasEmUsoHorta</div>
-        </div>
-    </div>
-
-    <div class="panel mb-4">
-        <div class="panel-header">
-            <span class="panel-title">Solicitações de canteiro pendentes</span>
-            @if (solicitacoesPendentes.Any())
-            {
-                <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint);border:1.5px solid var(--status-maint);">
-                    @solicitacoesPendentes.Count pendente@(solicitacoesPendentes.Count != 1 ? "s" : "")
-                </span>
-            }
-            else
-            {
-                <span class="badge badge-free">✓ Em dia</span>
-            }
-        </div>
-        @if (!solicitacoesPendentes.Any())
-        {
-            <div class="py-4 text-center text-muted" style="font-size:.9rem;">
-                Nenhuma solicitação pendente de canteiro.
-            </div>
-        }
-        else
-        {
-            <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Solicitante</th>
-                            <th>Canteiro</th>
-                            <th style="width:130px;">Data do Pedido</th>
-                            <th style="width:200px;text-align:center;">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var s in solicitacoesPendentes)
-                        {
-                            <tr>
-                                <td><strong>@s.Usuario?.Nome</strong></td>
-                                <td>@s.Canteiro.Identificacao</td>
-                                <td style="font-size:.8rem;color:var(--gray-400);">@s.DataPedido.ToLocalTime().ToString("g")</td>
-                                <td class="text-center">
-                                    <div class="table-actions justify-content-center">
-                                        <form asp-controller="Solicitacoes" asp-action="Aprovar" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="solicitacaoId" value="@s.Id" />
-                                            <button type="submit" class="btn btn-sm"
-                                                    style="background:var(--status-free-bg);color:var(--status-free);border:1.5px solid var(--status-free);font-weight:700;">
-                                                ✓ Aprovar
-                                            </button>
-                                        </form>
-                                        <form asp-controller="Solicitacoes" asp-action="Reprovar" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="solicitacaoId" value="@s.Id" />
-                                            <button type="submit" class="btn btn-sm"
-                                                    style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
-                                                ✕ Recusar
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-
-    <div class="panel mb-4">
-        <div class="panel-header">
-            <span class="panel-title">Pedidos de empréstimo pendentes</span>
-            @if (emprestimosPendentes.Any())
-            {
-                <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint);border:1.5px solid var(--status-maint);">
-                    @emprestimosPendentes.Count pendente@(emprestimosPendentes.Count != 1 ? "s" : "")
-                </span>
-            }
-            else
-            {
-                <span class="badge badge-free">✓ Em dia</span>
-            }
-        </div>
-        @if (!emprestimosPendentes.Any())
-        {
-            <div class="py-4 text-center text-muted" style="font-size:.9rem;">
-                Nenhum pedido pendente de empréstimo.
-            </div>
-        }
-        else
-        {
-            <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Solicitante</th>
-                            <th>Ferramenta</th>
-                            <th style="width:130px;">Pedido</th>
-                            <th style="width:200px;text-align:center;">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var e in emprestimosPendentes)
-                        {
-                            <tr>
-                                <td><strong>@e.Usuario?.Nome</strong></td>
-                                <td>@e.Ferramenta.Nome</td>
-                                <td style="font-size:.8rem;color:var(--gray-400);">@e.DataRetirada.ToLocalTime().ToString("g")</td>
-                                <td class="text-center">
-                                    <div class="table-actions justify-content-center">
-                                        <form asp-controller="Emprestimos" asp-action="Aprovar" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="emprestimoId" value="@e.Id" />
-                                            <button type="submit" class="btn btn-sm"
-                                                    style="background:var(--status-free-bg);color:var(--status-free);border:1.5px solid var(--status-free);font-weight:700;">
-                                                ✓ Aprovar
-                                            </button>
-                                        </form>
-                                        <form asp-controller="Emprestimos" asp-action="Reprovar" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="emprestimoId" value="@e.Id" />
-                                            <button type="submit" class="btn btn-sm"
-                                                    style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
-                                                ✕ Recusar
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-
-    <div class="panel mb-4">
-        <div class="panel-header">
-            <span class="panel-title">Participantes atuais</span>
-            @if (participantesAtivos.Any())
-            {
-                <span class="badge badge-free">@participantesAtivos.Count ativo@(participantesAtivos.Count != 1 ? "s" : "")</span>
-            }
-        </div>
-        @if (!participantesAtivos.Any())
-        {
-            <div class="py-4 text-center text-muted" style="font-size:.9rem;">
-                Nenhum participante com canteiro ativo no momento.
-            </div>
-        }
-        else
-        {
-            <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Participante</th>
-                            <th>Canteiro</th>
-                            <th style="width:130px;">Desde</th>
-                            <th style="width:160px;text-align:center;">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var p in participantesAtivos)
-                        {
-                            <tr>
-                                <td><strong>@p.Usuario?.Nome</strong></td>
-                                <td>@p.Canteiro.Identificacao</td>
-                                <td style="font-size:.8rem;color:var(--gray-400);">@p.DataPedido.ToLocalTime().ToString("g")</td>
-                                <td class="text-center">
-                                    <form asp-controller="Solicitacoes" asp-action="Sair" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="solicitacaoId" value="@p.Id" />
-                                        <button type="submit" class="btn btn-sm"
-                                                style="background:var(--status-busy-bg);color:var(--status-busy);border:1.5px solid var(--status-busy);font-weight:700;">
-                                            ✕ Remover
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-}
