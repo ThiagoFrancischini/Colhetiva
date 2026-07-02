@@ -1,0 +1,107 @@
+@model Colhetiva.ViewModels.RegistrarAtividadeViewModel
+@{
+    ViewData["Title"] = "Registrar Atividade";
+}
+
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">Registrar Atividade</h1>
+            <p class="ch-page-header__sub">@Model.Horta.Nome</p>
+        </div>
+    </div>
+    <a href="@Url.Action("Details", "Horta", new { id = Model.Horta.Id })" class="btn-back" style="border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.9);background:transparent;">
+        ← Voltar à horta
+    </a>
+</div>
+
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger ch-alert-animate mb-3">@TempData["MensagemErro"]</div>
+}
+
+<div class="panel">
+    <div class="panel-header">
+        <span class="panel-title">Nova atividade</span>
+    </div>
+    <div class="panel-body">
+        <form asp-action="Registrar" method="post" id="form-registrar-atividade">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="hortaId" value="@Model.Horta.Id" />
+            <input type="hidden" name="tzOffsetMinutes" id="tzOffsetMinutes" value="0" />
+
+            <div class="mb-3">
+                <label class="form-label fw-bold" for="canteiroId">Canteiro</label>
+                <select class="form-select" name="canteiroId" id="canteiroId">
+                    <option value="">— Nenhum (atividade geral da horta) —</option>
+                    @foreach (var c in Model.Horta.Canteiros.OrderBy(c => c.Identificacao))
+                    {
+                        if (Model.CanteiroIdPreSelecionado == c.Id)
+                        {
+                            <option value="@c.Id" selected>@c.Identificacao</option>
+                        }
+                        else
+                        {
+                            <option value="@c.Id">@c.Identificacao</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold" for="dataHora">Data e hora</label>
+                <input type="datetime-local" class="form-control" name="dataHora" id="dataHora" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold" for="atividadeSelecionada">Atividade</label>
+                <select class="form-select" name="atividadeSelecionada" id="atividadeSelecionada">
+                    @foreach (var sugestao in Model.AtividadesSugeridas)
+                    {
+                        <option value="@sugestao">@sugestao</option>
+                    }
+                    <option value="Outro">Outro...</option>
+                </select>
+                <input type="text" class="form-control mt-2" name="atividadeOutro" id="atividadeOutro"
+                       maxlength="100" placeholder="Descreva a atividade" style="display:none;" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold" for="observacoes">Observações</label>
+                <textarea class="form-control" name="observacoes" id="observacoes" maxlength="500" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold" for="fotoUrl">Link da foto (opcional)</label>
+                <input type="url" class="form-control" name="fotoUrl" id="fotoUrl"
+                       maxlength="2083" placeholder="https://..." pattern="https?://.*" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Registrar Atividade</button>
+                <a href="@Url.Action("Details", "Horta", new { id = Model.Horta.Id })" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var offsetInput = document.getElementById('tzOffsetMinutes');
+        offsetInput.value = new Date().getTimezoneOffset();
+
+        var dataHoraInput = document.getElementById('dataHora');
+        var agora = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
+        dataHoraInput.value = agora.toISOString().slice(0, 16);
+
+        var selectAtividade = document.getElementById('atividadeSelecionada');
+        var inputOutro = document.getElementById('atividadeOutro');
+
+        function atualizarVisibilidadeOutro() {
+            inputOutro.style.display = selectAtividade.value === 'Outro' ? 'block' : 'none';
+        }
+
+        selectAtividade.addEventListener('change', atualizarVisibilidadeOutro);
+        atualizarVisibilidadeOutro();
+    })();
+</script>

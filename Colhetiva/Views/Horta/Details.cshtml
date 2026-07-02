@@ -112,6 +112,14 @@
                         Meus Empréstimos
                     </a>
                 }
+                <a href="@Url.Action("Registrar", "RegistroAtividades", new { hortaId = Model.Id })"
+                   class="btn btn-primary btn-block" style="justify-content:center;">
+                    Registrar Atividade
+                </a>
+                <a href="@Url.Action("Timeline", "RegistroAtividades", new { hortaId = Model.Id })"
+                   class="btn btn-secondary btn-block" style="justify-content:center;">
+                    Ver Timeline da Horta
+                </a>
             </div>
         </div>
 
@@ -130,7 +138,7 @@
                         <th>Identificação</th>
                         <th>Dimensões</th>
                         <th style="width:130px;">Status</th>
-                        <th style="width:170px;text-align:center;">Ação</th>
+                        <th style="width:230px;text-align:center;">Ação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -189,6 +197,10 @@
                                             Indisponível
                                         </button>
                                     }
+                                    <a href="@Url.Action("Registrar", "RegistroAtividades", new { hortaId = Model.Id, canteiroId = c.Id })"
+                                       class="btn btn-sm btn-secondary" title="Registrar atividade neste canteiro">
+                                        Registrar
+                                    </a>
                                 </td>
                             </tr>
                         }

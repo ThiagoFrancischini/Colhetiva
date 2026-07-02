@@ -26,6 +26,7 @@ namespace Colhetiva.Infrastructure.Context
         public DbSet<Ferramenta> Ferramentas { get; set; }
         public DbSet<Emprestimo> Emprestimos { get; set; }
         public DbSet<Organization> Organizations { get; set; }
+        public DbSet<RegistroAtividade> RegistrosAtividades { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -79,6 +80,7 @@ namespace Colhetiva.Infrastructure.Context
                 entity.Property(u => u.Nome).IsRequired().HasMaxLength(150);
                 entity.Property(u => u.CPF).HasMaxLength(11);
                 entity.Property(u => u.Email).IsRequired().HasMaxLength(100);
+                entity.Property(u => u.FotoPerfilUrl).IsRequired(false).HasMaxLength(2083);
 
                 entity.HasOne(u => u.Endereco)
                       .WithOne()
@@ -200,6 +202,34 @@ namespace Colhetiva.Infrastructure.Context
                       .WithMany()
                       .HasForeignKey(e => e.FerramentaId)
                       .IsRequired();
+            });
+
+            modelBuilder.Entity<RegistroAtividade>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.DataHora).IsRequired();
+                entity.Property(r => r.Atividade).IsRequired().HasMaxLength(100);
+                entity.Property(r => r.Observacoes).IsRequired(false).HasMaxLength(500);
+                entity.Property(r => r.FotoUrl).IsRequired(false).HasMaxLength(2083);
+
+                entity.HasOne(r => r.Horta)
+                      .WithMany()
+                      .HasForeignKey(r => r.HortaId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.Usuario)
+                      .WithMany()
+                      .HasForeignKey(r => r.UsuarioId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Canteiro)
+                      .WithMany()
+                      .HasForeignKey(r => r.CanteiroId)
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
          }
     }

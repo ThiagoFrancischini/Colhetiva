@@ -1,0 +1,88 @@
+@model List<Colhetiva.DTOs.TimelineHortaDto>
+@{
+    var horta = ViewBag.Horta as Colhetiva.Core.Entities.Horta;
+    ViewData["Title"] = "Timeline da Horta";
+}
+
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">Timeline — @horta?.Nome</h1>
+            <p class="ch-page-header__sub">Atividades recentes registradas pelos participantes desta horta.</p>
+        </div>
+    </div>
+    <a href="@Url.Action("Details", "Horta", new { id = horta?.Id })" class="btn-back" style="border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.9);background:transparent;">
+        ← Voltar à horta
+    </a>
+</div>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success ch-alert-animate mb-3">@TempData["MensagemSucesso"]</div>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger ch-alert-animate mb-3">@TempData["MensagemErro"]</div>
+}
+@if (TempData["MensagemInfo"] != null)
+{
+    <div class="alert alert-info ch-alert-animate mb-3">@TempData["MensagemInfo"]</div>
+}
+
+<div class="mb-4">
+    <a href="@Url.Action("Registrar", new { hortaId = horta?.Id })" class="btn btn-primary">Registrar Atividade</a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="panel">
+        <div class="panel-body py-4 text-center text-muted" style="font-size:.9rem;">
+            Nenhuma atividade registrada nesta horta ainda.
+        </div>
+    </div>
+}
+else
+{
+    <div class="timeline-list">
+        @foreach (var item in Model)
+        {
+            <div class="panel mb-3">
+                <div class="panel-body" style="display:flex;gap:var(--space-3);">
+                    <div class="avatar" style="flex-shrink:0;">
+                        @if (!string.IsNullOrWhiteSpace(item.FotoPerfilUsuario))
+                        {
+                            <img src="@item.FotoPerfilUsuario" alt="@item.NomeUsuario" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />
+                        }
+                        else
+                        {
+                            @(item.NomeUsuario.Length > 0 ? item.NomeUsuario.Substring(0, 1).ToUpper() : "?")
+                        }
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2);flex-wrap:wrap;">
+                            <strong>@item.NomeUsuario</strong>
+                            <span style="font-size:var(--text-xs);color:var(--gray-400);">@item.DataHora.ToLocalTime().ToString("g")</span>
+                        </div>
+                        <p style="margin:var(--space-1) 0 0;color:var(--gray-700);">
+                            <span class="badge badge-free">@item.Atividade</span>
+                            @if (!string.IsNullOrWhiteSpace(item.NomeCanteiro))
+                            {
+                                <span> no canteiro <strong>@item.NomeCanteiro</strong></span>
+                            }
+                        </p>
+                        @if (!string.IsNullOrWhiteSpace(item.Observacoes))
+                        {
+                            <div class="mural-box mt-2">@item.Observacoes</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.FotoUrl))
+                        {
+                            <div class="mt-2">
+                                <img src="@item.FotoUrl" alt="Foto da atividade" style="max-width:320px;max-height:320px;border-radius:var(--radius);object-fit:cover;" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

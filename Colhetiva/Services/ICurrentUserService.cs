@@ -9,4 +9,5 @@ public interface ICurrentUserService
     Task<bool> IsOrganizationAdminAsync();
     Task<Guid?> GetOrganizationIdAsync();
     Task<bool> CanManageHortaAsync(Horta horta);
+    Task<bool> IsParticipantOfHortaAsync(Guid hortaId);
 }

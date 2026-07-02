@@ -155,4 +155,34 @@ public static class EntityMapping
         Nome = dto.Nome,
         EstadoId = dto.EstadoId
     };
+
+    public static ItemCalendarioDto ToItemCalendarioDto(this RegistroAtividade entity) => new(
+        entity.Id,
+        entity.DataHora,
+        entity.Atividade,
+        entity.Horta?.Nome ?? string.Empty,
+        entity.Canteiro?.Identificacao
+    );
+
+    public static TimelineHortaDto ToTimelineHortaDto(this RegistroAtividade entity) => new(
+        entity.Id,
+        entity.DataHora,
+        entity.Atividade,
+        entity.Observacoes,
+        entity.FotoUrl,
+        entity.Usuario?.Nome ?? string.Empty,
+        entity.Usuario?.FotoPerfilUrl,
+        entity.Canteiro?.Identificacao
+    );
+
+    public static RegistroAtividade ToEntity(this CriarAtividadeDto dto, Guid usuarioId) => new()
+    {
+        UsuarioId = usuarioId,
+        HortaId = dto.HortaId,
+        CanteiroId = dto.CanteiroId,
+        DataHora = dto.DataHora,
+        Atividade = dto.Atividade,
+        Observacoes = dto.Observacoes,
+        FotoUrl = dto.FotoUrl
+    };
 }

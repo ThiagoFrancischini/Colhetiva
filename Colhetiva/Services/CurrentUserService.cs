@@ -69,4 +69,16 @@ public class CurrentUserService : ICurrentUserService
             horta.OrganizationId.HasValue &&
             usuario.OrganizationId == horta.OrganizationId;
     }
+
+    public async Task<bool> IsParticipantOfHortaAsync(Guid hortaId)
+    {
+        var usuarioId = UsuarioId;
+        if (usuarioId == null)
+            return false;
+
+        return await _db.Solicitacoes.AnyAsync(s =>
+            s.UsuarioId == usuarioId.Value &&
+            s.Status == StatusSolicitacao.Aprovado &&
+            s.Canteiro.HortaId == hortaId);
+    }
 }

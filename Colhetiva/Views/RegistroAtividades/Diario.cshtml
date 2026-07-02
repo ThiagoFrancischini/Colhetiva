@@ -1,0 +1,78 @@
+@model Colhetiva.ViewModels.CalendarioMesViewModel
+@{
+    ViewData["Title"] = "Meu Diário de Cultivo";
+    var nomesMeses = new[] { "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro" };
+    var nomesDias = new[] { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" };
+}
+
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">Meu Diário de Cultivo</h1>
+            <p class="ch-page-header__sub">@nomesMeses[Model.Mes - 1] de @Model.Ano</p>
+        </div>
+    </div>
+    <a href="@Url.Action("Index", "Home")" class="btn-back" style="border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.9);background:transparent;">
+        ← Voltar
+    </a>
+</div>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success ch-alert-animate mb-3">@TempData["MensagemSucesso"]</div>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger ch-alert-animate mb-3">@TempData["MensagemErro"]</div>
+}
+@if (TempData["MensagemInfo"] != null)
+{
+    <div class="alert alert-info ch-alert-animate mb-3">@TempData["MensagemInfo"]</div>
+}
+
+<div class="panel mb-4">
+    <div class="panel-header">
+        <a class="btn btn-sm btn-secondary" href="@Url.Action("Diario", new { ano = Model.MesAnterior.Year, mes = Model.MesAnterior.Month })">&larr; Mês anterior</a>
+        <span class="panel-title">@nomesMeses[Model.Mes - 1] / @Model.Ano</span>
+        <a class="btn btn-sm btn-secondary" href="@Url.Action("Diario", new { ano = Model.MesProximo.Year, mes = Model.MesProximo.Month })">Próximo mês &rarr;</a>
+    </div>
+    <div class="panel-body">
+        <div class="calendario-mes">
+            @foreach (var nome in nomesDias)
+            {
+                <div class="calendario-cabecalho">@nome</div>
+            }
+            @foreach (var semana in Model.Semanas)
+            {
+                foreach (var dia in semana)
+                {
+                    if (dia == null)
+                    {
+                        <div class="calendario-dia calendario-dia--out"></div>
+                    }
+                    else
+                    {
+                        var atividadesDoDia = Model.AtividadesPorDia.GetValueOrDefault(dia.Value.Date) ?? new();
+                        <div class="calendario-dia">
+                            <div class="calendario-dia__num">@dia.Value.Day</div>
+                            @foreach (var atividade in atividadesDoDia)
+                            {
+                                <div class="calendario-atividade-chip" title="@atividade.Atividade — @atividade.NomeHorta@(atividade.NomeCanteiro != null ? " / " + atividade.NomeCanteiro : "")">
+                                    @atividade.Atividade
+                                    <small>@atividade.NomeHorta</small>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            }
+        </div>
+
+        @if (!Model.AtividadesPorDia.Any())
+        {
+            <div class="py-4 text-center text-muted" style="font-size:.9rem;">
+                Nenhuma atividade registrada neste mês.
+            </div>
+        }
+    </div>
+</div>
