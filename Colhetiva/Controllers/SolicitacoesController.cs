@@ -1,6 +1,7 @@
 using Colhetiva.Core.Entities;
 using Colhetiva.Core.Enums;
 using Colhetiva.Infrastructure.Context;
+using Colhetiva.Services;
 using Microsoft.AspNetCore.Mvc;
 
 using System;
@@ -14,10 +15,12 @@ namespace Colhetiva.Controllers
     public class SolicitacoesController : Controller
     {
         private readonly ColhetivaDbContext _db;
+        private readonly ICurrentUserService _currentUser;
 
-        public SolicitacoesController(ColhetivaDbContext db)
+        public SolicitacoesController(ColhetivaDbContext db, ICurrentUserService currentUser)
         {
             _db = db;
+            _currentUser = currentUser;
         }
 
         // GET: /Solicitacoes/Index?hortaId=...
@@ -30,11 +33,17 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Faça login para solicitar um canteiro.";
+                TempData["MensagemInfo"] = "Faï¿½a login para solicitar um canteiro.";
                 return RedirectToAction("Login", "Account");
             }
 
             var usuarioId = Guid.Parse(usuarioIdStr);
+
+            if (await _currentUser.IsOrganizationAdminAsync())
+            {
+                TempData["MensagemInfo"] = "UsuÃ¡rios de organizaÃ§Ã£o nÃ£o podem solicitar participaÃ§Ã£o em canteiros.";
+                return RedirectToAction("Details", "Horta", new { id = hortaId });
+            }
 
             var horta = await _db.Hortas
                 .Include(h => h.Endereco)
@@ -64,24 +73,30 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Faça login para solicitar um canteiro.";
+                TempData["MensagemInfo"] = "Faï¿½a login para solicitar um canteiro.";
                 return RedirectToAction("Login", "Account");
             }
 
             var usuarioId = Guid.Parse(usuarioIdStr);
+
+            if (await _currentUser.IsOrganizationAdminAsync())
+            {
+                TempData["MensagemInfo"] = "UsuÃ¡rios de organizaÃ§Ã£o nÃ£o podem solicitar participaÃ§Ã£o em canteiros.";
+                return RedirectToAction("Details", "Horta", new { id = hortaId });
+            }
 
             var canteiro = await _db.Canteiros
                 .FirstOrDefaultAsync(c => c.Id == canteiroId);
 
             if (canteiro == null)
             {
-                TempData["MensagemErro"] = "Canteiro não encontrado.";
+                TempData["MensagemErro"] = "Canteiro nï¿½o encontrado.";
                 return RedirectToAction("Index", new { hortaId });
             }
 
             if (canteiro.Status != StatusCanteiro.Disponivel)
             {
-                TempData["MensagemErro"] = "Canteiro não está disponível para solicitação.";
+                TempData["MensagemErro"] = "Canteiro nï¿½o estï¿½ disponï¿½vel para solicitaï¿½ï¿½o.";
                 return RedirectToAction("Index", new { hortaId });
             }
 
@@ -92,7 +107,7 @@ namespace Colhetiva.Controllers
 
             if (existePendente)
             {
-                TempData["MensagemInfo"] = "Você já possui uma solicitação pendente para esse canteiro.";
+                TempData["MensagemInfo"] = "Vocï¿½ jï¿½ possui uma solicitaï¿½ï¿½o pendente para esse canteiro.";
                 return RedirectToAction("Index", new { hortaId });
             }
 
@@ -107,79 +122,11 @@ namespace Colhetiva.Controllers
             await _db.Solicitacoes.AddAsync(solicitacao);
             await _db.SaveChangesAsync();
 
-            TempData["MensagemSucesso"] = "Solicitação enviada com sucesso. Aguarde a resposta do gestor.";
+            TempData["MensagemSucesso"] = "Solicitaï¿½ï¿½o enviada com sucesso. Aguarde a resposta do gestor.";
             return RedirectToAction("Index", new { hortaId });
         }
 
-        // --- Painel do gestor / Manage e outras ações já existentes ---
-        [HttpGet]
-        public async Task<IActionResult> Manage()
-        {
-            var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
-            if (string.IsNullOrEmpty(usuarioIdStr))
-            {
-                TempData["MensagemInfo"] = "Faça login para acessar as solicitações.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            var usuarioId = Guid.Parse(usuarioIdStr);
-
-            var usuario = await _db.Usuarios
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == usuarioId);
-
-            var hortasQuery = _db.Hortas.AsNoTracking().Where(h =>
-                h.UsuarioId == usuarioId ||
-                (usuario != null && usuario.OrganizationId.HasValue && h.OrganizationId.HasValue && h.OrganizationId == usuario.OrganizationId));
-
-            var hortaIds = await hortasQuery.Select(h => h.Id).ToListAsync();
-
-            var solicitacoes = await _db.Solicitacoes
-                .Include(s => s.Canteiro)
-                    .ThenInclude(c => c.Horta)
-                .Include(s => s.Usuario)
-                .Where(s => s.Status == StatusSolicitacao.Pendente && hortaIds.Contains(s.Canteiro.HortaId))
-                .OrderBy(s => s.DataPedido)
-                .ToListAsync();
-
-            var emprestimos = await _db.Emprestimos
-                .Include(e => e.Ferramenta)
-                    .ThenInclude(f => f.Horta)
-                .Include(e => e.Usuario)
-                .Where(e => e.Status == StatusEmprestimo.Pendente && hortaIds.Contains(e.Ferramenta.HortaId))
-                .OrderBy(e => e.DataRetirada)
-                .ToListAsync();
-
-            var participantes = await _db.Solicitacoes
-                .Include(s => s.Canteiro)
-                    .ThenInclude(c => c.Horta)
-                .Include(s => s.Usuario)
-                .Where(s => s.Status == StatusSolicitacao.Aprovado && hortaIds.Contains(s.Canteiro.HortaId))
-                .OrderBy(s => s.DataPedido)
-                .ToListAsync();
-
-            var totalParticipants = participantes.Count;
-            var totalCanteiros = await _db.Canteiros.Where(c => hortaIds.Contains(c.HortaId)).CountAsync();
-            var occupiedCanteiros = await _db.Canteiros.Where(c => hortaIds.Contains(c.HortaId) && c.Status == StatusCanteiro.Ocupado).CountAsync();
-            var taxaOcupacao = totalCanteiros == 0 ? 0m : (decimal)occupiedCanteiros * 100m / totalCanteiros;
-            var ferramentasEmUso = await _db.Ferramentas.Where(f => hortaIds.Contains(f.HortaId) && f.Status == StatusFerramenta.EmUso).CountAsync();
-
-            var inventario = await _db.Ferramentas
-                .Include(f => f.Horta)
-                .Where(f => hortaIds.Contains(f.HortaId))
-                .OrderBy(f => f.Nome)
-                .ToListAsync();
-
-            ViewBag.PendingEmprestimos = emprestimos;
-            ViewBag.Participantes = participantes;
-            ViewBag.TotalParticipants = totalParticipants;
-            ViewBag.TaxaOcupacao = Math.Round(taxaOcupacao, 1);
-            ViewBag.FerramentasEmUso = ferramentasEmUso;
-            ViewBag.Inventario = inventario;
-
-            return View(solicitacoes);
-        }
-
+        // --- Aï¿½ï¿½es de gestï¿½o de uma horta especï¿½fica (ver Horta/Details) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateFerramenta(Guid ferramentaId, string nome, string status)
@@ -187,20 +134,16 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Faça login para editar ferramentas.";
+                TempData["MensagemInfo"] = "Faï¿½a login para editar ferramentas.";
                 return RedirectToAction("Login", "Account");
             }
-            var usuarioId = Guid.Parse(usuarioIdStr);
 
             var ferramenta = await _db.Ferramentas
                 .Include(f => f.Horta)
                 .FirstOrDefaultAsync(f => f.Id == ferramentaId);
 
             if (ferramenta == null) return NotFound();
-
-            var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
-            var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && ferramenta.Horta.OrganizationId.HasValue && usuario.OrganizationId == ferramenta.Horta.OrganizationId;
-            if (ferramenta.Horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+            if (!await _currentUser.CanManageHortaAsync(ferramenta.Horta)) return Forbid();
 
             ferramenta.Nome = (nome ?? string.Empty).Trim();
 
@@ -211,7 +154,7 @@ namespace Colhetiva.Controllers
 
             await _db.SaveChangesAsync();
             TempData["MensagemSucesso"] = "Ferramenta atualizada.";
-            return RedirectToAction("Manage");
+            return RedirectToAction("Details", "Horta", new { id = ferramenta.HortaId });
         }
 
         [HttpPost]
@@ -221,20 +164,16 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Faça login para alterar ferramentas.";
+                TempData["MensagemInfo"] = "Faï¿½a login para alterar ferramentas.";
                 return RedirectToAction("Login", "Account");
             }
-            var usuarioId = Guid.Parse(usuarioIdStr);
 
             var ferramenta = await _db.Ferramentas
                 .Include(f => f.Horta)
                 .FirstOrDefaultAsync(f => f.Id == ferramentaId);
 
             if (ferramenta == null) return NotFound();
-
-            var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
-            var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && ferramenta.Horta.OrganizationId.HasValue && usuario.OrganizationId == ferramenta.Horta.OrganizationId;
-            if (ferramenta.Horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+            if (!await _currentUser.CanManageHortaAsync(ferramenta.Horta)) return Forbid();
 
             if (ferramenta.Status == StatusFerramenta.Inativa)
                 ferramenta.Status = StatusFerramenta.Disponivel;
@@ -243,8 +182,9 @@ namespace Colhetiva.Controllers
 
             await _db.SaveChangesAsync();
             TempData["MensagemSucesso"] = "Status da ferramenta atualizado.";
-            return RedirectToAction("Manage");
+            return RedirectToAction("Details", "Horta", new { id = ferramenta.HortaId });
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Aprovar(Guid solicitacaoId)
@@ -252,12 +192,9 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Faça login para aprovar solicitações.";
+                TempData["MensagemInfo"] = "Faï¿½a login para aprovar solicitaï¿½ï¿½es.";
                 return RedirectToAction("Login", "Account");
             }
-            var usuarioId = Guid.Parse(usuarioIdStr);
-
-            var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
 
             var s = await _db.Solicitacoes
                 .Include(x => x.Canteiro)
@@ -267,14 +204,12 @@ namespace Colhetiva.Controllers
             if (s == null) return NotFound();
             var horta = s.Canteiro?.Horta;
             if (horta == null) return NotFound();
-
-            var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && horta.OrganizationId.HasValue && usuario.OrganizationId == horta.OrganizationId;
-            if (horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+            if (!await _currentUser.CanManageHortaAsync(horta)) return Forbid();
 
             if (s.Status != StatusSolicitacao.Pendente)
             {
-                TempData["MensagemInfo"] = "Solicitação já processada.";
-                return RedirectToAction("Manage");
+                TempData["MensagemInfo"] = "Solicitaï¿½ï¿½o jï¿½ processada.";
+                return RedirectToAction("Details", "Horta", new { id = horta.Id });
             }
 
             s.Status = StatusSolicitacao.Aprovado;
@@ -287,8 +222,8 @@ namespace Colhetiva.Controllers
 
             await _db.SaveChangesAsync();
 
-            TempData["MensagemSucesso"] = "Solicitação aprovada. Participante confirmado.";
-            return RedirectToAction("Manage");
+            TempData["MensagemSucesso"] = "Solicitaï¿½ï¿½o aprovada. Participante confirmado.";
+            return RedirectToAction("Details", "Horta", new { id = horta.Id });
         }
 
         [HttpPost]
@@ -298,12 +233,9 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Faça login para reprovar solicitações.";
+                TempData["MensagemInfo"] = "Faï¿½a login para reprovar solicitaï¿½ï¿½es.";
                 return RedirectToAction("Login", "Account");
             }
-            var usuarioId = Guid.Parse(usuarioIdStr);
-
-            var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
 
             var s = await _db.Solicitacoes
                 .Include(x => x.Canteiro)
@@ -313,22 +245,56 @@ namespace Colhetiva.Controllers
             if (s == null) return NotFound();
             var horta = s.Canteiro?.Horta;
             if (horta == null) return NotFound();
-
-            var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && horta.OrganizationId.HasValue && usuario.OrganizationId == horta.OrganizationId;
-            if (horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+            if (!await _currentUser.CanManageHortaAsync(horta)) return Forbid();
 
             if (s.Status != StatusSolicitacao.Pendente)
             {
-                TempData["MensagemInfo"] = "Solicitação já processada.";
-                return RedirectToAction("Manage");
+                TempData["MensagemInfo"] = "Solicitaï¿½ï¿½o jï¿½ processada.";
+                return RedirectToAction("Details", "Horta", new { id = horta.Id });
             }
 
             s.Status = StatusSolicitacao.Recusado;
             await _db.SaveChangesAsync();
 
-            TempData["MensagemSucesso"] = "Solicitação recusada.";
-            return RedirectToAction("Manage");
+            TempData["MensagemSucesso"] = "Solicitaï¿½ï¿½o recusada.";
+            return RedirectToAction("Details", "Horta", new { id = horta.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Sair(Guid solicitacaoId)
+        {
+            var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
+            if (string.IsNullOrEmpty(usuarioIdStr))
+            {
+                TempData["MensagemInfo"] = "Faï¿½a login para gerenciar participantes.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var s = await _db.Solicitacoes
+                .Include(x => x.Canteiro)
+                    .ThenInclude(c => c.Horta)
+                .FirstOrDefaultAsync(x => x.Id == solicitacaoId);
+
+            if (s == null) return NotFound();
+            var horta = s.Canteiro?.Horta;
+            if (horta == null) return NotFound();
+            if (!await _currentUser.CanManageHortaAsync(horta)) return Forbid();
+
+            if (s.Status != StatusSolicitacao.Aprovado)
+            {
+                TempData["MensagemInfo"] = "Este participante nï¿½o estï¿½ mais ativo neste canteiro.";
+                return RedirectToAction("Details", "Horta", new { id = horta.Id });
+            }
+
+            s.Status = StatusSolicitacao.Cancelado;
+            s.Canteiro.Status = StatusCanteiro.Disponivel;
+
+            await _db.SaveChangesAsync();
+
+            TempData["MensagemSucesso"] = "Participante removido do canteiro.";
+            return RedirectToAction("Details", "Horta", new { id = horta.Id });
         }
     }
-    
+
 }

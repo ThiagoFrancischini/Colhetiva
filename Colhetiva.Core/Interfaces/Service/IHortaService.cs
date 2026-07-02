@@ -11,8 +11,8 @@ namespace Colhetiva.Core.Interfaces.Service
         Task<List<Horta>> GetAllAsync();
         Task<Horta?> GetByIdAsync(Guid id);
         Task<Horta> CriarHortaAsync(Horta novaHorta);
-        Task<Horta> CriarCompletoAsync(HortaCadastroInput input);
-        Task AtualizarCompletoAsync(HortaCadastroInput input);
+        Task<Horta> CriarCompletoAsync(HortaCadastroInput input, Guid? organizationId);
+        Task AtualizarCompletoAsync(HortaCadastroInput input, Guid? organizationId);
         Task ExcluirAsync(Guid id);
         Task<List<Horta>> FiltrarAsync(string? nome, string? cidade);
     }

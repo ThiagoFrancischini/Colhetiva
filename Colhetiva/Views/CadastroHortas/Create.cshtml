@@ -31,9 +31,10 @@
                 </div>
                 <div class="col-md-6">
                     <label asp-for="UsuarioId" class="field-label"></label>
-                    <select asp-for="UsuarioId" asp-items="ViewBag.Usuarios" class="form-select">
-                        <option value="">Selecione...</option>
+                    <select asp-for="UsuarioId" asp-items="ViewBag.Usuarios" class="form-select js-select2-responsavel">
+                        <option value="">Nenhum (a organização é a responsável)</option>
                     </select>
+                    <span class="hint-text">Deixe em branco para a própria organização ficar responsável pela horta.</span>
                     <span asp-validation-for="UsuarioId" class="hint-text text-danger"></span>
                 </div>
                 <div class="col-12">
@@ -162,6 +163,12 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        $(function () {
+            $('.js-select2-responsavel').select2({
+                width: '100%'
+            });
+        });
+
         (function () {
             let cIx = @Model.Canteiros.Count;
             let fIx = @Model.Ferramentas.Count;

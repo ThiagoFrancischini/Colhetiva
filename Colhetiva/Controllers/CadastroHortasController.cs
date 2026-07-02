@@ -4,6 +4,7 @@ using Colhetiva.Core.Input;
 using Colhetiva.Core.Interfaces.Service;
 using Colhetiva.Filters;
 using Colhetiva.Infrastructure.Context;
+using Colhetiva.Services;
 using Colhetiva.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -15,17 +16,17 @@ namespace Colhetiva.Controllers;
 public class CadastroHortasController : Controller
 {
     private readonly IHortaService _hortaService;
-    private readonly IUsuarioService _usuarioService;
     private readonly ColhetivaDbContext _db;
+    private readonly ICurrentUserService _currentUser;
 
     public CadastroHortasController(
         IHortaService hortaService,
-        IUsuarioService usuarioService,
-        ColhetivaDbContext db)
+        ColhetivaDbContext db,
+        ICurrentUserService currentUser)
     {
         _hortaService = hortaService;
-        _usuarioService = usuarioService;
         _db = db;
+        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -40,36 +41,22 @@ public class CadastroHortasController : Controller
         return PartialView("_LinhaFerramenta", new FerramentaLinhaEditorModel { Index = i, Linha = new FerramentaLinhaViewModel() });
     }
 
-    // Substitua apenas o método Index existente por este
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        // Obtém todas as hortas via serviço
         var todasHortas = await _hortaService.GetAllAsync();
 
-        // Se houver usuário logado, tenta filtrar por OrganizationId vinculada ao usuário
-        var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
-        if (!string.IsNullOrEmpty(usuarioIdStr))
+        var organizationId = await _currentUser.GetOrganizationIdAsync();
+        if (organizationId.HasValue)
         {
-            if (Guid.TryParse(usuarioIdStr, out var usuarioId))
-            {
-                var usuario = await _db.Usuarios
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Id == usuarioId);
+            var hortasDaOrg = todasHortas
+                .Where(h => h.OrganizationId == organizationId.Value)
+                .ToList();
 
-                if (usuario != null && usuario.OrganizationId.HasValue)
-                {
-                    var orgId = usuario.OrganizationId.Value;
-                    var hortasDaOrg = todasHortas
-                        .Where(h => h.OrganizationId.HasValue && h.OrganizationId.Value == orgId)
-                        .ToList();
-
-                    return View(hortasDaOrg);
-                }
-            }
+            return View(hortasDaOrg);
         }
 
-        // Se não houver usuário com organização, exibe todas (ou mantenha política desejada)
+        // Se não houver usuário com organização, exibe todas (ex.: ADMIN de sistema)
         return View(todasHortas);
     }
 
@@ -97,10 +84,18 @@ public class CadastroHortasController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
+        var responsavelId = model.UsuarioId ?? _currentUser.UsuarioId;
+        if (responsavelId == null)
+        {
+            ModelState.AddModelError(string.Empty, "Não foi possível determinar o responsável pela horta.");
+            return View(model);
+        }
+
         try
         {
-            var input = ToInput(model);
-            await _hortaService.CriarCompletoAsync(input);
+            var input = ToInput(model, responsavelId.Value);
+            var organizationId = await _currentUser.GetOrganizationIdAsync();
+            await _hortaService.CriarCompletoAsync(input, organizationId);
             TempData["MensagemSucesso"] = "Horta cadastrada com sucesso.";
             return RedirectToAction(nameof(Index));
         }
@@ -138,10 +133,18 @@ public class CadastroHortasController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
+        var responsavelId = model.UsuarioId ?? _currentUser.UsuarioId;
+        if (responsavelId == null)
+        {
+            ModelState.AddModelError(string.Empty, "Não foi possível determinar o responsável pela horta.");
+            return View(model);
+        }
+
         try
         {
-            var input = ToInput(model);
-            await _hortaService.AtualizarCompletoAsync(input);
+            var input = ToInput(model, responsavelId.Value);
+            var organizationId = await _currentUser.GetOrganizationIdAsync();
+            await _hortaService.AtualizarCompletoAsync(input, organizationId);
             TempData["MensagemSucesso"] = "Horta atualizada com sucesso.";
             return RedirectToAction(nameof(Index));
         }
@@ -175,12 +178,13 @@ public class CadastroHortasController : Controller
         var cidades = await _db.Cidades.AsNoTracking().OrderBy(c => c.Nome).ToListAsync();
         ViewBag.Cidades = new SelectList(cidades, "Id", "Nome");
 
-        var usuarios = await _usuarioService.GetAll();
-        var usuarioOptions = usuarios
+        var participantes = await _db.Usuarios
+            .AsNoTracking()
+            .Where(u => u.UserContexts.Any(uc => uc.Role == Role.PARTICIPANT) && !u.OrganizationId.HasValue)
             .OrderBy(u => u.Nome ?? u.Email)
             .Select(u => new { u.Id, Text = string.IsNullOrWhiteSpace(u.Nome) ? u.Email : $"{u.Nome} ({u.Email})" })
-            .ToList();
-        ViewBag.Usuarios = new SelectList(usuarioOptions, "Id", "Text");
+            .ToListAsync();
+        ViewBag.Usuarios = new SelectList(participantes, "Id", "Text");
     }
 
     private static void NormalizarCep(HortaCadastroViewModel model)
@@ -196,14 +200,14 @@ public class CadastroHortasController : Controller
             ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 dígitos.");
     }
 
-    private static HortaCadastroInput ToInput(HortaCadastroViewModel vm)
+    private static HortaCadastroInput ToInput(HortaCadastroViewModel vm, Guid usuarioResponsavelId)
     {
         return new HortaCadastroInput
         {
             Id = vm.Id,
             Nome = vm.Nome.Trim(),
             Regras = vm.Regras?.Trim() ?? string.Empty,
-            UsuarioId = vm.UsuarioId,
+            UsuarioId = usuarioResponsavelId,
             Endereco = new EnderecoHortaInput
             {
                 Id = vm.Endereco.Id,

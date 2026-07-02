@@ -3,6 +3,7 @@ using Colhetiva.Core.Interfaces.Service;
 using Colhetiva.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Colhetiva.Infrastructure.Context;
+using Colhetiva.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Colhetiva.Controllers
@@ -10,16 +11,23 @@ namespace Colhetiva.Controllers
     public class HomeController : Controller
     {
         private readonly IHortaService _hortaService;
+        private readonly ICurrentUserService _currentUser;
 
-        public HomeController(IHortaService hortaService)
+        public HomeController(IHortaService hortaService, ICurrentUserService currentUser)
         {
             _hortaService = hortaService;
+            _currentUser = currentUser;
         }
 
         public async Task<IActionResult> Index(string nome, string cidade)
         {
-            // Busca as hortas aplicando os filtros de pesquisa (nome/cidade).
-            // N√O filtramos por organizaÁ„o/usu·rio aqui ó exibimos todas as hortas.
+            // Organiza√ß√£o usa o painel pr√≥prio (CadastroHortas), n√£o a busca p√∫blica de hortas.
+            if (await _currentUser.IsOrganizationAdminAsync())
+            {
+                return RedirectToAction("Index", "CadastroHortas");
+            }
+
+            // Busca p√∫blica de hortas para participantes (filtros de nome/cidade).
             var hortas = await _hortaService.FiltrarAsync(nome, cidade);
 
             var vm = new HomeDto

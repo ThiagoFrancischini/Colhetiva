@@ -3,11 +3,13 @@ using Colhetiva.Core.Interfaces.Service;
 using Colhetiva.Core.Interfaces.Repositories;
 using Colhetiva.Core.Services;
 using Colhetiva.Infrastructure.Repositories;
+using Colhetiva.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromDays(30);
@@ -42,6 +44,7 @@ builder.Services.AddScoped<ICanteiroService, CanteiroService>();
 builder.Services.AddScoped<ISolicitacaoService, SolicitacaoService>();
 builder.Services.AddScoped<IFerramentaService, FerramentaService>();
 builder.Services.AddScoped<IEmprestimoService, EmprestimoService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 var app = builder.Build();
 

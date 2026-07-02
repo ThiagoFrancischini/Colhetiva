@@ -5,16 +5,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Colhetiva.Infrastructure.Context;
 using Colhetiva.Core.Enums;
+using Colhetiva.Services;
 
 namespace Colhetiva.Controllers
 {
     public class HortaController : Controller
     {
         private readonly ColhetivaDbContext _db;
+        private readonly ICurrentUserService _currentUser;
 
-        public HortaController(ColhetivaDbContext db)
+        public HortaController(ColhetivaDbContext db, ICurrentUserService currentUser)
         {
             _db = db;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -35,7 +38,7 @@ namespace Colhetiva.Controllers
             if (horta == null)
                 return NotFound();
 
-            // Identifica canteiros com solicitação pendente do usuário logado
+            // Identifica canteiros com solicitaï¿½ï¿½o pendente do usuï¿½rio logado
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             List<Guid> pendentes = new();
             List<Guid> emprestimosAtivos = new();
@@ -55,6 +58,43 @@ namespace Colhetiva.Controllers
 
             ViewBag.PendingCanteiros = pendentes;
             ViewBag.MyActiveEmprestimos = emprestimosAtivos;
+
+            var podeGerenciar = await _currentUser.CanManageHortaAsync(horta);
+            ViewBag.PodeGerenciar = podeGerenciar;
+            if (podeGerenciar)
+            {
+                var solicitacoesPendentes = await _db.Solicitacoes
+                    .Include(s => s.Usuario)
+                    .Include(s => s.Canteiro)
+                    .Where(s => s.Status == StatusSolicitacao.Pendente && s.Canteiro.HortaId == id)
+                    .OrderBy(s => s.DataPedido)
+                    .ToListAsync();
+
+                var participantesAtivos = await _db.Solicitacoes
+                    .Include(s => s.Usuario)
+                    .Include(s => s.Canteiro)
+                    .Where(s => s.Status == StatusSolicitacao.Aprovado && s.Canteiro.HortaId == id)
+                    .OrderBy(s => s.DataPedido)
+                    .ToListAsync();
+
+                var emprestimosPendentes = await _db.Emprestimos
+                    .Include(e => e.Usuario)
+                    .Include(e => e.Ferramenta)
+                    .Where(e => e.Status == StatusEmprestimo.Pendente && e.Ferramenta.HortaId == id)
+                    .OrderBy(e => e.DataRetirada)
+                    .ToListAsync();
+
+                var totalCanteiros = horta.Canteiros.Count;
+                var occupiedCanteiros = horta.Canteiros.Count(c => c.Status == StatusCanteiro.Ocupado);
+
+                ViewBag.SolicitacoesPendentes = solicitacoesPendentes;
+                ViewBag.ParticipantesAtivos = participantesAtivos;
+                ViewBag.EmprestimosPendentes = emprestimosPendentes;
+                ViewBag.TotalParticipantsHorta = participantesAtivos.Count;
+                ViewBag.TaxaOcupacaoHorta = totalCanteiros == 0 ? 0m : Math.Round((decimal)occupiedCanteiros * 100m / totalCanteiros, 1);
+                ViewBag.FerramentasEmUsoHorta = horta.Ferramentas.Count(f => f.Status == StatusFerramenta.EmUso);
+            }
+
             return View(horta);
         }
     }

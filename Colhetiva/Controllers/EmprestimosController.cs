@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Colhetiva.Infrastructure.Context;
 using Colhetiva.Core.Entities;
 using Colhetiva.Core.Enums;
+using Colhetiva.Services;
 using System.Collections.Generic;
 
 namespace Colhetiva.Controllers;
@@ -13,10 +14,12 @@ namespace Colhetiva.Controllers;
 public class EmprestimosController : Controller
 {
     private readonly ColhetivaDbContext _db;
+    private readonly ICurrentUserService _currentUser;
 
-    public EmprestimosController(ColhetivaDbContext db)
+    public EmprestimosController(ColhetivaDbContext db, ICurrentUserService currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -28,10 +31,16 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Faça login para solicitar empréstimo.";
+            TempData["MensagemInfo"] = "Faï¿½a login para solicitar emprï¿½stimo.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
+
+        if (await _currentUser.IsOrganizationAdminAsync())
+        {
+            TempData["MensagemInfo"] = "UsuÃ¡rios de organizaÃ§Ã£o nÃ£o podem solicitar emprÃ©stimo de ferramentas.";
+            return RedirectToAction("Details", "Horta", new { id = hortaId });
+        }
 
         var horta = await _db.Hortas
             .Include(h => h.Endereco)
@@ -66,10 +75,16 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Faça login para solicitar empréstimo.";
+            TempData["MensagemInfo"] = "Faï¿½a login para solicitar emprï¿½stimo.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
+
+        if (await _currentUser.IsOrganizationAdminAsync())
+        {
+            TempData["MensagemInfo"] = "UsuÃ¡rios de organizaÃ§Ã£o nÃ£o podem solicitar emprÃ©stimo de ferramentas.";
+            return RedirectToAction("Details", "Horta", new { id = hortaId });
+        }
 
         var ferramenta = await _db.Ferramentas
             .Include(f => f.Horta)
@@ -77,13 +92,13 @@ public class EmprestimosController : Controller
 
         if (ferramenta == null)
         {
-            TempData["MensagemErro"] = "Ferramenta não encontrada.";
+            TempData["MensagemErro"] = "Ferramenta nï¿½o encontrada.";
             return RedirectToAction("Index", new { hortaId });
         }
 
         if (ferramenta.Status != StatusFerramenta.Disponivel)
         {
-            TempData["MensagemErro"] = "Ferramenta não está disponível para empréstimo.";
+            TempData["MensagemErro"] = "Ferramenta nï¿½o estï¿½ disponï¿½vel para emprï¿½stimo.";
             return RedirectToAction("Index", new { hortaId });
         }
 
@@ -94,7 +109,7 @@ public class EmprestimosController : Controller
 
         if (existe)
         {
-            TempData["MensagemInfo"] = "Você já possui um pedido/ empréstimo ativo para esta ferramenta.";
+            TempData["MensagemInfo"] = "Vocï¿½ jï¿½ possui um pedido/ emprï¿½stimo ativo para esta ferramenta.";
             return RedirectToAction("Index", new { hortaId });
         }
 
@@ -110,39 +125,9 @@ public class EmprestimosController : Controller
         await _db.Emprestimos.AddAsync(emprestimo);
         await _db.SaveChangesAsync();
 
-        // Pedido salvo com Status = Pendente — gestor verá imediatamente em Manage
-        TempData["MensagemSucesso"] = "Pedido de empréstimo enviado. Aguarde a aprovação do responsável.";
+        // Pedido salvo com Status = Pendente ï¿½ gestor verï¿½ imediatamente em Manage
+        TempData["MensagemSucesso"] = "Pedido de emprï¿½stimo enviado. Aguarde a aprovaï¿½ï¿½o do responsï¿½vel.";
         return RedirectToAction("Index", new { hortaId });
-    }
-
-    // ---- NOVA AÇÃO: Manage (lista pedidos pendentes visíveis ao gestor) ----
-    [HttpGet]
-    public async Task<IActionResult> Manage()
-    {
-        var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
-        if (string.IsNullOrEmpty(usuarioIdStr))
-        {
-            TempData["MensagemInfo"] = "Faça login para acessar pedidos de empréstimo.";
-            return RedirectToAction("Login", "Account");
-        }
-        var usuarioId = Guid.Parse(usuarioIdStr);
-
-        // carregar usuário para obter OrganizationId
-        var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
-
-        var pedidos = await _db.Emprestimos
-            .Include(e => e.Ferramenta)
-                .ThenInclude(f => f.Horta)
-            .Include(e => e.Usuario)
-            .Where(e => e.Status == StatusEmprestimo.Pendente &&
-                       (e.Ferramenta.Horta.UsuarioId == usuarioId ||
-                        (usuario != null && usuario.OrganizationId.HasValue &&
-                         e.Ferramenta.Horta.OrganizationId.HasValue &&
-                         e.Ferramenta.Horta.OrganizationId == usuario.OrganizationId)))
-            .OrderBy(e => e.DataRetirada)
-            .ToListAsync();
-
-        return View(pedidos);
     }
 
     [HttpPost]
@@ -152,12 +137,9 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Faça login para aprovar pedidos.";
+            TempData["MensagemInfo"] = "Faï¿½a login para aprovar pedidos.";
             return RedirectToAction("Login", "Account");
         }
-        var usuarioId = Guid.Parse(usuarioIdStr);
-
-        var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
 
         var e = await _db.Emprestimos
             .Include(x => x.Ferramenta)
@@ -167,14 +149,12 @@ public class EmprestimosController : Controller
         if (e == null) return NotFound();
         var horta = e.Ferramenta?.Horta;
         if (horta == null) return NotFound();
-
-        var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && horta.OrganizationId.HasValue && usuario.OrganizationId == horta.OrganizationId;
-        if (horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+        if (!await _currentUser.CanManageHortaAsync(horta)) return Forbid();
 
         if (e.Status != StatusEmprestimo.Pendente)
         {
-            TempData["MensagemInfo"] = "Pedido já processado.";
-            return RedirectToAction("Manage");
+            TempData["MensagemInfo"] = "Pedido jï¿½ processado.";
+            return RedirectToAction("Details", "Horta", new { id = horta.Id });
         }
 
         e.Status = StatusEmprestimo.Aprovado;
@@ -189,7 +169,7 @@ public class EmprestimosController : Controller
         await _db.SaveChangesAsync();
 
         TempData["MensagemSucesso"] = "Pedido aprovado. Ferramenta marcada como em uso.";
-        return RedirectToAction("Manage");
+        return RedirectToAction("Details", "Horta", new { id = horta.Id });
     }
 
     [HttpPost]
@@ -199,12 +179,9 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Faça login para reprovar pedidos.";
+            TempData["MensagemInfo"] = "Faï¿½a login para reprovar pedidos.";
             return RedirectToAction("Login", "Account");
         }
-        var usuarioId = Guid.Parse(usuarioIdStr);
-
-        var usuario = await _db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId);
 
         var e = await _db.Emprestimos
             .Include(x => x.Ferramenta)
@@ -214,21 +191,19 @@ public class EmprestimosController : Controller
         if (e == null) return NotFound();
         var horta = e.Ferramenta?.Horta;
         if (horta == null) return NotFound();
-
-        var pertenceOrg = usuario != null && usuario.OrganizationId.HasValue && horta.OrganizationId.HasValue && usuario.OrganizationId == horta.OrganizationId;
-        if (horta.UsuarioId != usuarioId && !pertenceOrg) return Forbid();
+        if (!await _currentUser.CanManageHortaAsync(horta)) return Forbid();
 
         if (e.Status != StatusEmprestimo.Pendente)
         {
-            TempData["MensagemInfo"] = "Pedido já processado.";
-            return RedirectToAction("Manage");
+            TempData["MensagemInfo"] = "Pedido jï¿½ processado.";
+            return RedirectToAction("Details", "Horta", new { id = horta.Id });
         }
 
         e.Status = StatusEmprestimo.Recusado;
         await _db.SaveChangesAsync();
 
         TempData["MensagemSucesso"] = "Pedido reprovado.";
-        return RedirectToAction("Manage");
+        return RedirectToAction("Details", "Horta", new { id = horta.Id });
     }
 
     [HttpPost]
@@ -238,7 +213,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Faça login para devolver ferramenta.";
+            TempData["MensagemInfo"] = "Faï¿½a login para devolver ferramenta.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
@@ -251,7 +226,7 @@ public class EmprestimosController : Controller
         if (e.UsuarioId != usuarioId) return Forbid();
         if (e.Status != StatusEmprestimo.Aprovado || e.DataDevolucao != null)
         {
-            TempData["MensagemInfo"] = "Empréstimo não pode ser devolvido.";
+            TempData["MensagemInfo"] = "Emprï¿½stimo nï¿½o pode ser devolvido.";
             return RedirectToAction("Index", new { hortaId });
         }
 
@@ -269,7 +244,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Faça login para ver seus empréstimos.";
+            TempData["MensagemInfo"] = "Faï¿½a login para ver seus emprï¿½stimos.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);

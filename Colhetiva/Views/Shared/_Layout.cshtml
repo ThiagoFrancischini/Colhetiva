@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Colhetiva</title>
     <link rel="stylesheet" href="~/css/app.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -37,9 +38,6 @@
                             <span>Cadastro de Hortas</span>
                         </a>
                     }
-                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Manage", "Solicitacoes")">
-                        Painel de Gestão
-                    </a>
                     <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index", "Profile")">
                         Perfil
                     </a>
@@ -66,6 +64,7 @@
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
     <script src="~/js/app.js"></script>
     <script src="~/js/masks.js"></script>

@@ -15,9 +15,8 @@ public class HortaCadastroViewModel
     [Display(Name = "Regras")]
     public string Regras { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Selecione o responsável (usuário).")]
     [Display(Name = "Responsável")]
-    public Guid UsuarioId { get; set; }
+    public Guid? UsuarioId { get; set; }
 
     public EnderecoHortaViewModel Endereco { get; set; } = new();
 
