@@ -10,78 +10,128 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <nav class="navbar navbar-light bg-light border-bottom">
-        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; padding: 0.5rem 1rem;">
-            @{
-                var nomeUsuario = Context.Session.GetString("UsuarioNome");
-            }
-           
-            @if (!string.IsNullOrEmpty(nomeUsuario))
+    @{
+        var nomeUsuario = Context.Session.GetString("UsuarioNome");
+    }
+    @if (!string.IsNullOrEmpty(nomeUsuario))
+    {
+            var usuarioRole = Context.Session.GetString("UsuarioRole");
+            var isAdmin = string.Equals(usuarioRole, "ADMIN", StringComparison.OrdinalIgnoreCase);
+            var usuarioIdStr = Context.Session.GetString("UsuarioId");
+            var naoLidas = Guid.TryParse(usuarioIdStr, out var usuarioIdSino)
+                ? await NotificacaoService.GetCountNaoLidasAsync(usuarioIdSino)
+                : 0;
+            var roleLabel = (usuarioRole ?? "").ToUpperInvariant() switch
             {
-                <div style="justify-self: start;">
-                    <span class="navbar-text text-dark mb-0">
-                        Bem-vindo, <strong>@nomeUsuario</strong>
-                    </span>
+                "MASTER" => "Master",
+                "ADMIN" => "Administrador",
+                "GARDEN_LEAD" => "Líder de Horta",
+                "PARTICIPANT" => "Participante",
+                _ => usuarioRole
+            };
+            var initial = nomeUsuario.Trim().Length > 0 ? nomeUsuario.Trim()[0].ToString().ToUpperInvariant() : "?";
+            var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+            var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+            string ItemClass(string controller, string? action = null)
+            {
+                var match = string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+                    && (action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase));
+                return match ? "sidebar-item active" : "sidebar-item";
+            }
+        <div class="with-sidebar">
+            <aside class="sidebar">
+                <div class="sidebar-logo-area">
+                    <a class="sidebar-logo" href="@Url.Action("Index", "Home")">Colhetiva</a>
                 </div>
-                
-                <div style="justify-self: center;">
-                    <a class="navbar-brand fw-bold text-success mb-0" href="@Url.Action("Index", "Home")">Colhetiva</a>
+
+                <div class="sidebar-avatar-wrap">
+                    <span class="avatar">@initial</span>
+                    <div>
+                        <div class="avatar-name">@nomeUsuario</div>
+                        <div class="avatar-role">@roleLabel</div>
+                    </div>
                 </div>
-                
-                <div style="justify-self: end; display: flex; align-items: center; gap: 0.5rem;">
-                    @{
-                        var usuarioRole = Context.Session.GetString("UsuarioRole");
-                        var isAdmin = string.Equals(usuarioRole, "ADMIN", StringComparison.OrdinalIgnoreCase);
-                    }
-                    @if (isAdmin)
+
+                <div class="sidebar-section-label">Principal</div>
+
+                <a class="@ItemClass("Home", "Index")" href="@Url.Action("Index", "Home")">
+                    <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354z" />
+                    </svg>
+                    <span>Início</span>
+                </a>
+
+                <a class="@ItemClass("RegistroAtividades", "Diario")" href="@Url.Action("Diario", "RegistroAtividades")">
+                    <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z" />
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                    </svg>
+                    <span>Meu Diário</span>
+                </a>
+
+                <a class="@ItemClass("Emprestimos")" href="@Url.Action("Meus", "Emprestimos")">
+                    <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M0 1.5A.5.5 0 0 1 .5 1H1c.36 0 .59.174.756.363.147.166.264.372.359.551.09.171.181.362.281.551.032.06.055.104.077.145A1 1 0 0 0 3.5 3h.5v9a.5.5 0 0 1-1 0V3.5A.5.5 0 0 1 3 3h.153a.5.5 0 0 0-.089-.145l-.02-.03a5 5 0 0 1-.281-.551 5 5 0 0 0-.359-.551C2.09 1.674 1.86 1.5 1.5 1.5H.5a.5.5 0 0 1-.5-.5" />
+                        <path d="M13.5 1a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-1 0v-13a.5.5 0 0 1 .5-.5" />
+                    </svg>
+                    <span>Meus Empréstimos</span>
+                </a>
+
+                <a class="@ItemClass("Notificacoes")" style="position:relative;" href="@Url.Action("Index", "Notificacoes")">
+                    <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+                    </svg>
+                    <span>Notificações</span>
+                    @if (naoLidas > 0)
                     {
-                        <a class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1" href="@Url.Action("Index", "CadastroHortas")" title="Cadastro de Hortas">
-                            <span>Cadastro de Hortas</span>
-                        </a>
+                        <span class="notif-badge">@naoLidas</span>
                     }
-                    <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Diario", "RegistroAtividades")">
-                        Meu Diário
-                    </a>
-                    @{
-                        var usuarioIdStr = Context.Session.GetString("UsuarioId");
-                        var naoLidas = Guid.TryParse(usuarioIdStr, out var usuarioIdSino)
-                            ? await NotificacaoService.GetCountNaoLidasAsync(usuarioIdSino)
-                            : 0;
-                    }
-                    <a class="btn btn-outline-secondary btn-sm" style="position:relative;" href="@Url.Action("Index", "Notificacoes")" title="Notificações">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+                </a>
+
+                <div class="sidebar-section-label">Conta</div>
+
+                <a class="@ItemClass("Profile")" href="@Url.Action("Index", "Profile")">
+                    <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" />
+                    </svg>
+                    <span>Perfil</span>
+                </a>
+
+                @if (isAdmin)
+                {
+                    <a class="@ItemClass("CadastroHortas")" href="@Url.Action("Index", "CadastroHortas")">
+                        <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.5-11.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0" />
                         </svg>
-                        <span>Notificações</span>
-                        @if (naoLidas > 0)
-                        {
-                            <span class="notif-badge">@naoLidas</span>
-                        }
+                        <span>Cadastro de Hortas</span>
                     </a>
-                    <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index", "Profile")">
-                        Perfil
-                    </a>
-                    <a class="btn btn-outline-danger btn-sm" href="@Url.Action("Logout", "Account")">
-                        Sair
+                }
+
+                <div class="sidebar-footer">
+                    <a class="sidebar-item" href="@Url.Action("Logout", "Account")">
+                        <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
+                            <path d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z" />
+                        </svg>
+                        <span>Sair</span>
                     </a>
                 </div>
-            }
-            else
-            {
-                <div style="grid-column: 1 / span 3; text-align: center;">
-                    <a class="navbar-brand fw-bold text-success mb-0" href="@Url.Action("Index", "Home")">Colhetiva</a>
-                </div>
-            }
+            </aside>
+
+            <div class="main-content">
+                @RenderBody()
+
+                <footer class="text-center mt-4 py-3 border-top">
+                    <p class="text-muted mb-0">Universidade de Caxias do Sul, 2025</p>
+                </footer>
+            </div>
         </div>
-    </nav>
-
-    <div class="container mt-4">
+    }
+    else
+    {
         @RenderBody()
-    </div>
-
-    <footer class="text-center mt-4 py-3 border-top">
-        <p class="text-muted mb-0">Universidade de Caxias do Sul, 2025</p>
-    </footer>
+    }
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

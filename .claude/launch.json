@@ -4,8 +4,9 @@
     {
       "name": "colhetiva-web",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "Colhetiva/Colhetiva.csproj", "--urls", "http://localhost:5271"],
-      "port": 5271
+      "runtimeArgs": ["run", "--project", "Colhetiva/Colhetiva.csproj", "--no-launch-profile"],
+      "port": 5271,
+      "autoPort": true
     }
   ]
 }

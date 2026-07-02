@@ -119,73 +119,6 @@ a {
 }
 
 /* ══════════════════════════════════════════
-   NAVEGAÇÃO / NAVBAR
-══════════════════════════════════════════ */
-.navbar,
-.nav-bar {
-    background: var(--green-dark);
-    color: var(--white);
-    box-shadow: 0 2px 8px rgba(0,0,0,.20);
-    min-height: 64px; /* barra mais alta — mais fácil de clicar */
-    display: flex;
-    align-items: center;
-    padding: 0 var(--space-4);
-    gap: var(--space-3);
-}
-
-    /* Logo / nome da aplicação */
-    .navbar .navbar-brand,
-    .nav-bar .logo,
-    .logo {
-        font-family: var(--font-head);
-        font-size: var(--text-xl); /* 26px — destaque */
-        color: var(--white);
-        letter-spacing: .4px;
-        text-decoration: none;
-    }
-
-        .navbar .navbar-brand span,
-        .logo span {
-            color: var(--green-soft);
-        }
-
-    /* Links de navegação no topo */
-    .navbar .nav-link,
-    .nav-bar .nav-link {
-        color: rgba(255,255,255,.88);
-        text-decoration: none;
-        font-size: var(--text-sm);
-        font-weight: 600;
-        padding: var(--space-2) var(--space-3);
-        border-radius: var(--radius-sm);
-        min-height: var(--touch-min);
-        display: inline-flex;
-        align-items: center;
-        transition: background .15s;
-    }
-
-        .navbar .nav-link:hover,
-        .nav-bar .nav-link:hover {
-            background: rgba(255,255,255,.12);
-            color: var(--white);
-        }
-
-        .navbar .nav-link.active,
-        .nav-bar .nav-link.active {
-            background: rgba(255,255,255,.20);
-            color: var(--white);
-        }
-
-/* ══════════════════════════════════════════
-   LAYOUT — CONTAINER
-══════════════════════════════════════════ */
-.container {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: var(--space-5) var(--space-4);
-}
-
-/* ══════════════════════════════════════════
    TIPOGRAFIA
 ══════════════════════════════════════════ */
 h1, .h1 {
@@ -710,6 +643,13 @@ tbody tr.highlight td {
     opacity: .8;
 }
 
+/* Rodapé da sidebar (ação de sair) — fica colado embaixo */
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: var(--space-2);
+    border-top: 1px solid rgba(255,255,255,.12);
+}
+
 /* Área de conteúdo principal ao lado da sidebar */
 .with-sidebar {
     display: flex;
@@ -1086,7 +1026,7 @@ tbody tr.highlight td {
    MEDIA PRINT — impressão limpa
 ══════════════════════════════════════════ */
 @media print {
-    .sidebar, .navbar, .nav-bar, .btn, button {
+    .sidebar, .btn, button {
         display: none !important;
     }
 
