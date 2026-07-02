@@ -1,0 +1,70 @@
+@model List<Colhetiva.Core.Entities.Notificacao>
+@{
+    ViewData["Title"] = "Notificações";
+}
+
+<div class="ch-page-header mb-4">
+    <div class="ch-page-header__left">
+        <div>
+            <h1 class="ch-page-header__title">Notificações</h1>
+            <p class="ch-page-header__sub">Avisos publicados nas hortas em que você participa</p>
+        </div>
+    </div>
+</div>
+
+<div class="panel mb-4">
+    <div class="panel-header">
+        <span class="panel-title">Todas as notificações</span>
+        @{
+            var naoLidas = Model.Count(n => !n.Lida);
+        }
+        @if (naoLidas > 0)
+        {
+            <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint);border:1.5px solid var(--status-maint);">
+                @naoLidas não lida@(naoLidas != 1 ? "s" : "")
+            </span>
+        }
+        else
+        {
+            <span class="badge badge-free">✓ Em dia</span>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="py-4 text-center text-muted" style="font-size:.9rem;">
+            Nenhuma notificação por enquanto.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper" style="border-radius:0;border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aviso</th>
+                        <th>Horta</th>
+                        <th style="width:130px;">Recebido em</th>
+                        <th style="width:130px;text-align:center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var n in Model)
+                    {
+                        <tr class="@(n.Lida ? "" : "highlight")">
+                            <td><strong>@n.Aviso.Titulo</strong></td>
+                            <td>@n.Aviso.Horta?.Nome</td>
+                            <td style="font-size:.8rem;color:var(--gray-400);">@n.DataCriacao.ToLocalTime().ToString("g")</td>
+                            <td class="text-center">
+                                <a asp-controller="Notificacoes" asp-action="MarcarELida" asp-route-id="@n.Id"
+                                   class="btn btn-sm btn-outline">
+                                    @(n.Lida ? "Ver aviso" : "Marcar como lida")
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

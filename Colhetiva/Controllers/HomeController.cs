@@ -11,11 +11,13 @@ namespace Colhetiva.Controllers
     public class HomeController : Controller
     {
         private readonly IHortaService _hortaService;
+        private readonly IAvisoService _avisoService;
         private readonly ICurrentUserService _currentUser;
 
-        public HomeController(IHortaService hortaService, ICurrentUserService currentUser)
+        public HomeController(IHortaService hortaService, IAvisoService avisoService, ICurrentUserService currentUser)
         {
             _hortaService = hortaService;
+            _avisoService = avisoService;
             _currentUser = currentUser;
         }
 
@@ -35,6 +37,13 @@ namespace Colhetiva.Controllers
                 NomeUsuario = HttpContext.Session.GetString("UsuarioNome"),
                 Hortas = hortas.Select(HortaCardDto.FromEntity).ToList()
             };
+
+            var usuarioId = _currentUser.UsuarioId;
+            if (usuarioId.HasValue)
+            {
+                var feed = await _avisoService.GetFeedConsolidadoAsync(usuarioId.Value);
+                vm.Feed = feed.Select(AvisoFeedDto.FromEntity).ToList();
+            }
 
             return View(vm);
         }

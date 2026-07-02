@@ -27,6 +27,8 @@ namespace Colhetiva.Infrastructure.Context
         public DbSet<Emprestimo> Emprestimos { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<RegistroAtividade> RegistrosAtividades { get; set; }
+        public DbSet<Aviso> Avisos { get; set; }
+        public DbSet<Notificacao> Notificacoes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -230,6 +232,47 @@ namespace Colhetiva.Infrastructure.Context
                       .HasForeignKey(r => r.CanteiroId)
                       .IsRequired(false)
                       .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<Aviso>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+
+                entity.Property(a => a.Titulo).IsRequired().HasMaxLength(150);
+                entity.Property(a => a.Conteudo).IsRequired().HasMaxLength(2000);
+                entity.Property(a => a.DataCriacao).IsRequired();
+
+                entity.HasOne(a => a.Horta)
+                      .WithMany()
+                      .HasForeignKey(a => a.HortaId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(a => a.Usuario)
+                      .WithMany()
+                      .HasForeignKey(a => a.UsuarioId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Notificacao>(entity =>
+            {
+                entity.HasKey(n => n.Id);
+
+                entity.Property(n => n.DataCriacao).IsRequired();
+                entity.Property(n => n.Lida).IsRequired();
+
+                entity.HasOne(n => n.Usuario)
+                      .WithMany()
+                      .HasForeignKey(n => n.UsuarioId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(n => n.Aviso)
+                      .WithMany()
+                      .HasForeignKey(n => n.AvisoId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
             });
          }
     }

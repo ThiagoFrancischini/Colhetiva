@@ -1301,6 +1301,26 @@ tbody tr.highlight td {
     width: 200px;
 }
 
+/* ── Badge de notificações não lidas (sino) ── */
+.notif-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--danger);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    border: 2px solid var(--white);
+    line-height: 1;
+}
+
 /* ── Badge contador de hortas ── */
 .hortas-count-badge {
     display: inline-flex;

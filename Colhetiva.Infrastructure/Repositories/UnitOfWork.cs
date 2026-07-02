@@ -19,6 +19,8 @@ namespace Colhetiva.Infrastructure.Repositories
         public IFerramentaRepository FerramentaRepository { get; }
         public IEmprestimoRepository EmprestimoRepository { get; }
         public IRegistroAtividadeRepository RegistroAtividadeRepository { get; }
+        public IAvisoRepository AvisoRepository { get; }
+        public INotificacaoRepository NotificacaoRepository { get; }
 
         public UnitOfWork(
             ColhetivaDbContext context,
@@ -32,7 +34,9 @@ namespace Colhetiva.Infrastructure.Repositories
             ISolicitacaoRepository solicitacaoRepository,
             IFerramentaRepository ferramentaRepository,
             IEmprestimoRepository emprestimoRepository,
-            IRegistroAtividadeRepository registroAtividadeRepository)
+            IRegistroAtividadeRepository registroAtividadeRepository,
+            IAvisoRepository avisoRepository,
+            INotificacaoRepository notificacaoRepository)
         {
             _context = context;
             EstadoRepository = estadoRepository;
@@ -46,6 +50,8 @@ namespace Colhetiva.Infrastructure.Repositories
             FerramentaRepository = ferramentaRepository;
             EmprestimoRepository = emprestimoRepository;
             RegistroAtividadeRepository = registroAtividadeRepository;
+            AvisoRepository = avisoRepository;
+            NotificacaoRepository = notificacaoRepository;
         }
 
         public async Task<int> CompleteAsync()

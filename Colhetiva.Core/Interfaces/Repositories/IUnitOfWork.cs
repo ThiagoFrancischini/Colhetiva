@@ -19,6 +19,8 @@ namespace Colhetiva.Core.Interfaces.Repositories
         IFerramentaRepository FerramentaRepository { get; }
         IEmprestimoRepository EmprestimoRepository { get; }
         IRegistroAtividadeRepository RegistroAtividadeRepository { get; }
+        IAvisoRepository AvisoRepository { get; }
+        INotificacaoRepository NotificacaoRepository { get; }
         Task<int> CompleteAsync();
     }
 }

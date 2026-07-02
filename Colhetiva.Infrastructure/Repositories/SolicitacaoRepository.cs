@@ -1,4 +1,5 @@
 using Colhetiva.Core.Entities;
+using Colhetiva.Core.Enums;
 using Colhetiva.Core.Interfaces.Repositories;
 using Colhetiva.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,15 @@ namespace Colhetiva.Infrastructure.Repositories
             {
                 _context.Entry(existingSolicitacao).CurrentValues.SetValues(solicitacao);
             }
+        }
+
+        public async Task<List<Guid>> GetUsuarioIdsAprovadosPorHortaAsync(Guid hortaId)
+        {
+            return await _context.Solicitacoes
+                .Where(s => s.Status == StatusSolicitacao.Aprovado && s.Canteiro.HortaId == hortaId)
+                .Select(s => s.UsuarioId)
+                .Distinct()
+                .ToListAsync();
         }
     }
 }

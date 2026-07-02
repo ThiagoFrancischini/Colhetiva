@@ -10,5 +10,6 @@ namespace Colhetiva.Core.Interfaces.Repositories
         Task<List<Solicitacao>> GetSolicitacoes();
         Task Salvar(Solicitacao solicitacao);
         Task<Solicitacao?> GetById(Guid id);
+        Task<List<Guid>> GetUsuarioIdsAprovadosPorHortaAsync(Guid hortaId);
     }
 }

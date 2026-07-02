@@ -40,6 +40,43 @@
     </div>
 }
 
+@if (!string.IsNullOrEmpty(Model.NomeUsuario))
+{
+    <div class="section-header mt-4">
+        <h2 class="section-title" style="margin:0;">
+            Mural de Avisos
+            <span class="hortas-count-badge">@Model.Feed.Count</span>
+        </h2>
+    </div>
+
+    @if (!Model.Feed.Any())
+    {
+        <div class="alert alert-info mb-4" role="alert">
+            <span>Nenhum aviso por enquanto para as suas hortas.</span>
+        </div>
+    }
+    else
+    {
+        <div class="mb-4">
+            @foreach (var aviso in Model.Feed)
+            {
+                <div class="panel mb-3">
+                    <div class="panel-header">
+                        <span class="panel-title">@aviso.Titulo</span>
+                        <span class="badge-inst badge">@aviso.HortaNome</span>
+                    </div>
+                    <div class="panel-body">
+                        <p style="white-space:pre-wrap;">@aviso.Conteudo</p>
+                        <p class="hint-text mb-0">
+                            Publicado por <strong>@aviso.AutorNome</strong> em @aviso.DataCriacao.ToLocalTime().ToString("g")
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
 <div class="section-header mt-4" id="hortas-grid">
     <h2 class="section-title" style="margin:0;">
         Hortas Cadastradas

@@ -51,6 +51,29 @@
 
 <div class="panel mb-4">
     <div class="panel-header">
+        <span class="panel-title">Publicar aviso</span>
+    </div>
+    <div class="panel-body">
+        <form asp-controller="Avisos" asp-action="Publicar" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="hortaId" value="@Model.Id" />
+            <div class="form-group">
+                <label for="aviso-titulo">Título</label>
+                <input type="text" id="aviso-titulo" name="titulo" maxlength="150" required
+                       placeholder="Ex.: Manutenção da torneira no sábado" />
+            </div>
+            <div class="form-group">
+                <label for="aviso-conteudo">Mensagem</label>
+                <textarea id="aviso-conteudo" name="conteudo" maxlength="2000" required
+                          placeholder="Escreva o aviso para os participantes desta horta..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Publicar aviso</button>
+        </form>
+    </div>
+</div>
+
+<div class="panel mb-4">
+    <div class="panel-header">
         <span class="panel-title">Solicitações de canteiro pendentes</span>
         @if (solicitacoesPendentes.Any())
         {

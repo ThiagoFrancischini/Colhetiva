@@ -6,7 +6,26 @@ namespace Colhetiva.ViewModels;
 public class HomeDto
 {
     public List<HortaCardDto> Hortas { get; set; } = new();
+    public List<AvisoFeedDto> Feed { get; set; } = new();
     public string? NomeUsuario { get; set; }
+}
+
+public class AvisoFeedDto
+{
+    public string Titulo { get; set; } = string.Empty;
+    public string Conteudo { get; set; } = string.Empty;
+    public string HortaNome { get; set; } = string.Empty;
+    public string AutorNome { get; set; } = string.Empty;
+    public DateTime DataCriacao { get; set; }
+
+    public static AvisoFeedDto FromEntity(Aviso a) => new()
+    {
+        Titulo = a.Titulo,
+        Conteudo = a.Conteudo,
+        HortaNome = a.Horta?.Nome ?? string.Empty,
+        AutorNome = a.Usuario?.Nome ?? string.Empty,
+        DataCriacao = a.DataCriacao
+    };
 }
 
 public class HortaCardDto

@@ -34,6 +34,8 @@ builder.Services.AddScoped<ISolicitacaoRepository, SolicitacaoRepository>();
 builder.Services.AddScoped<IFerramentaRepository, FerramentaRepository>();
 builder.Services.AddScoped<IEmprestimoRepository, EmprestimoRepository>();
 builder.Services.AddScoped<IRegistroAtividadeRepository, RegistroAtividadeRepository>();
+builder.Services.AddScoped<IAvisoRepository, AvisoRepository>();
+builder.Services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<ICidadeService, CidadeService>();
@@ -46,6 +48,8 @@ builder.Services.AddScoped<ISolicitacaoService, SolicitacaoService>();
 builder.Services.AddScoped<IFerramentaService, FerramentaService>();
 builder.Services.AddScoped<IEmprestimoService, EmprestimoService>();
 builder.Services.AddScoped<IRegistroAtividadeService, RegistroAtividadeService>();
+builder.Services.AddScoped<IAvisoService, AvisoService>();
+builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 var app = builder.Build();
