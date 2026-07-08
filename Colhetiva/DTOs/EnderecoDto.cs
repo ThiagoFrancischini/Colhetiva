@@ -28,7 +28,7 @@ public class EnderecoCreateDto
     [Display(Name = "Bairro")]
     public string Bairro { get; set; } = string.Empty;
 
-    [Display(Name = "N�mero")]
+    [Display(Name = "Número")]
     public string? Numero { get; set; }
 
     [Display(Name = "Complemento")]

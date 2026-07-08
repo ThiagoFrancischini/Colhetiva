@@ -33,7 +33,7 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Fa�a login para solicitar um canteiro.";
+                TempData["MensagemInfo"] = "Faça login para solicitar um canteiro.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -73,7 +73,7 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Fa�a login para solicitar um canteiro.";
+                TempData["MensagemInfo"] = "Faça login para solicitar um canteiro.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -90,13 +90,13 @@ namespace Colhetiva.Controllers
 
             if (canteiro == null)
             {
-                TempData["MensagemErro"] = "Canteiro n�o encontrado.";
+                TempData["MensagemErro"] = "Canteiro não encontrado.";
                 return RedirectToAction("Index", new { hortaId });
             }
 
             if (canteiro.Status != StatusCanteiro.Disponivel)
             {
-                TempData["MensagemErro"] = "Canteiro n�o est� dispon�vel para solicita��o.";
+                TempData["MensagemErro"] = "Canteiro não está disponível para Solicitação.";
                 return RedirectToAction("Index", new { hortaId });
             }
 
@@ -107,7 +107,7 @@ namespace Colhetiva.Controllers
 
             if (existePendente)
             {
-                TempData["MensagemInfo"] = "Voc� j� possui uma solicita��o pendente para esse canteiro.";
+                TempData["MensagemInfo"] = "Você já possui uma Solicitação pendente para esse canteiro.";
                 return RedirectToAction("Index", new { hortaId });
             }
 
@@ -122,11 +122,10 @@ namespace Colhetiva.Controllers
             await _db.Solicitacoes.AddAsync(solicitacao);
             await _db.SaveChangesAsync();
 
-            TempData["MensagemSucesso"] = "Solicita��o enviada com sucesso. Aguarde a resposta do gestor.";
+            TempData["MensagemSucesso"] = "Solicitação enviada com sucesso. Aguarde a resposta do gestor.";
             return RedirectToAction("Index", new { hortaId });
         }
 
-        // --- A��es de gest�o de uma horta espec�fica (ver Horta/Details) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateFerramenta(Guid ferramentaId, string nome, string status)
@@ -134,7 +133,7 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Fa�a login para editar ferramentas.";
+                TempData["MensagemInfo"] = "Faça login para editar ferramentas.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -164,7 +163,7 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Fa�a login para alterar ferramentas.";
+                TempData["MensagemInfo"] = "Faça login para alterar ferramentas.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -192,7 +191,7 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Fa�a login para aprovar solicita��es.";
+                TempData["MensagemInfo"] = "Faça login para aprovar solicitações.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -208,7 +207,7 @@ namespace Colhetiva.Controllers
 
             if (s.Status != StatusSolicitacao.Pendente)
             {
-                TempData["MensagemInfo"] = "Solicita��o j� processada.";
+                TempData["MensagemInfo"] = "Solicitação já processada.";
                 return RedirectToAction("Manage", "Horta", new { id = horta.Id });
             }
 
@@ -222,7 +221,7 @@ namespace Colhetiva.Controllers
 
             await _db.SaveChangesAsync();
 
-            TempData["MensagemSucesso"] = "Solicita��o aprovada. Participante confirmado.";
+            TempData["MensagemSucesso"] = "Solicitação aprovada. Participante confirmado.";
             return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
@@ -233,7 +232,7 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Fa�a login para reprovar solicita��es.";
+                TempData["MensagemInfo"] = "Faça login para reprovar solicitações.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -249,14 +248,14 @@ namespace Colhetiva.Controllers
 
             if (s.Status != StatusSolicitacao.Pendente)
             {
-                TempData["MensagemInfo"] = "Solicita��o j� processada.";
+                TempData["MensagemInfo"] = "Solicitação já processada.";
                 return RedirectToAction("Manage", "Horta", new { id = horta.Id });
             }
 
             s.Status = StatusSolicitacao.Recusado;
             await _db.SaveChangesAsync();
 
-            TempData["MensagemSucesso"] = "Solicita��o recusada.";
+            TempData["MensagemSucesso"] = "Solicitação recusada.";
             return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
@@ -267,7 +266,7 @@ namespace Colhetiva.Controllers
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             if (string.IsNullOrEmpty(usuarioIdStr))
             {
-                TempData["MensagemInfo"] = "Fa�a login para gerenciar participantes.";
+                TempData["MensagemInfo"] = "Faça login para gerenciar participantes.";
                 return RedirectToAction("Login", "Account");
             }
 
@@ -283,7 +282,7 @@ namespace Colhetiva.Controllers
 
             if (s.Status != StatusSolicitacao.Aprovado)
             {
-                TempData["MensagemInfo"] = "Este participante n�o est� mais ativo neste canteiro.";
+                TempData["MensagemInfo"] = "Este participante não está mais ativo neste canteiro.";
                 return RedirectToAction("Manage", "Horta", new { id = horta.Id });
             }
 

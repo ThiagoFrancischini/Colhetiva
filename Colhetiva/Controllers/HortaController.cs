@@ -38,7 +38,6 @@ namespace Colhetiva.Controllers
             if (horta == null)
                 return NotFound();
 
-            // Identifica canteiros com solicita��o pendente do usu�rio logado
             var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
             List<Guid> pendentes = new();
             List<Guid> emprestimosAtivos = new();

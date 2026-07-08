@@ -46,7 +46,7 @@ namespace Colhetiva.Controllers
 
                 if (usuario == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Email ou senha inv�lidos.");
+                    ModelState.AddModelError(string.Empty, "Email ou senha inválidos.");
                     return View(model);
                 }
 
@@ -94,7 +94,7 @@ namespace Colhetiva.Controllers
                 model.Endereco.Cep = new string(model.Endereco.Cep?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
                 if (model.Endereco.Cep.Length != 8)
                 {
-                    ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 d�gitos.");
+                    ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 dígitos.");
                     return View(model);
                 }
                 
@@ -110,7 +110,7 @@ namespace Colhetiva.Controllers
                 model.CPF = new string(model.CPF.Where(char.IsDigit).ToArray());
                 if (model.CPF.Length != 11)
                 {
-                    ModelState.AddModelError("CPF", "CPF deve ter 11 d�gitos.");
+                    ModelState.AddModelError("CPF", "CPF deve ter 11 dígitos.");
                     return View(model);
                 }
             }
@@ -144,7 +144,7 @@ namespace Colhetiva.Controllers
 
                 await _usuarioService.Salvar(usuario);
 
-                TempData["MensagemSucesso"] = "Conta criada com sucesso! Fa�a login para continuar.";
+                TempData["MensagemSucesso"] = "Conta criada com sucesso! Faça login para continuar.";
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
@@ -175,20 +175,19 @@ namespace Colhetiva.Controllers
 
             if (model.Endereco == null || model.Endereco.CidadeId == Guid.Empty)
             {
-                ModelState.AddModelError(string.Empty, "Cidade n�o foi selecionada corretamente. Por favor, selecione uma cidade.");
+                ModelState.AddModelError(string.Empty, "Cidade não foi selecionada corretamente. Por favor, selecione uma cidade.");
                 return View(model);
             }
 
             model.Endereco.Cep = new string(model.Endereco.Cep?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
             if (model.Endereco.Cep.Length != 8)
             {
-                ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 d�gitos.");
+                ModelState.AddModelError("Endereco.Cep", "CEP deve ter 8 dígitos.");
                 return View(model);
             }
 
             try
             {
-                // salvar endere�o da organiza��o
                 var endereco = new Endereco
                 {
                     Id = Guid.NewGuid(),
@@ -204,7 +203,6 @@ namespace Colhetiva.Controllers
 
                 await _enderecoService.Salvar(endereco);
 
-                // criar organiza��o
                 var organization = new Organization
                 {
                     Id = Guid.NewGuid(),
@@ -218,12 +216,11 @@ namespace Colhetiva.Controllers
                 await _db.Organizations.AddAsync(organization);
                 await _db.SaveChangesAsync();
 
-                // criar usu�rio respons�vel vinculado � organiza��o
                 var usuario = new Usuario
                 {
                     Id = Guid.NewGuid(),
                     Nome = model.Nome,
-                    CPF = string.Empty, // CPF n�o exigido para organiza��o respons�vel
+                    CPF = string.Empty,
                     Email = model.Email,
                     Password = model.Password,
                     EnderecoId = endereco.Id,
@@ -231,7 +228,6 @@ namespace Colhetiva.Controllers
                     OrganizationId = organization.Id
                 };
 
-                // Persistir usu�rio direto no DbContext para n�o acionar a valida��o de CPF em UsuarioService
                 await _db.Usuarios.AddAsync(usuario);
                 await _db.SaveChangesAsync();
 
@@ -246,7 +242,7 @@ namespace Colhetiva.Controllers
                 await _db.UserContexts.AddAsync(uc);
                 await _db.SaveChangesAsync();
 
-                TempData["MensagemSucesso"] = "Organiza��o cadastrada com sucesso! Fa�a login para acessar o painel administrativo.";
+                TempData["MensagemSucesso"] = "Organização cadastrada com sucesso! Faça login para acessar o painel administrativo.";
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
@@ -267,8 +263,8 @@ namespace Colhetiva.Controllers
         {
             if (ex is InvalidOperationException invalidOp)
             {
-                if (invalidOp.Message.Contains("Email j� est� em uso"))
-                    return "Este e-mail j� est� cadastrado. Tente fazer login ou utilize outro e-mail.";
+                if (invalidOp.Message.Contains("Email já está em uso"))
+                    return "Este e-mail já está cadastrado. Tente fazer login ou utilize outro e-mail.";
                 return invalidOp.Message;
             }
 
@@ -278,13 +274,13 @@ namespace Colhetiva.Controllers
             var innerMessage = ex.InnerException?.Message ?? ex.Message;
 
             if (innerMessage.Contains("duplicate key") || innerMessage.Contains("unique"))
-                return "J� existe um registro com esses dados. Verifique se o e-mail j� est� cadastrado.";
+                return "Já existe um registro com esses dados. Verifique se o e-mail ja esta cadastrado.";
 
             if (innerMessage.Contains("foreign key") || innerMessage.Contains("CidadeId"))
-                return "A cidade selecionada n�o existe. Por favor, selecione uma cidade v�lida.";
+                return "A cidade selecionada não existe. Por favor, selecione uma cidade válida.";
 
             if (innerMessage.Contains("entity changes") || innerMessage.Contains("DbUpdate"))
-                return "Erro ao salvar no banco de dados. Verifique os campos obrigat�rios.";
+                return "Erro ao salvar no banco de dados. Verifique os campos obrigatórios.";
 
             return $"Erro: {innerMessage}";
         }

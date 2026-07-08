@@ -31,7 +31,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Fa�a login para solicitar empr�stimo.";
+            TempData["MensagemInfo"] = "Faça login para solicitar empréstimo.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
@@ -75,7 +75,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Fa�a login para solicitar empr�stimo.";
+            TempData["MensagemInfo"] = "Faa login para solicitar empréstimo.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
@@ -92,13 +92,13 @@ public class EmprestimosController : Controller
 
         if (ferramenta == null)
         {
-            TempData["MensagemErro"] = "Ferramenta n�o encontrada.";
+            TempData["MensagemErro"] = "Ferramenta não encontrada.";
             return RedirectToAction("Index", new { hortaId });
         }
 
         if (ferramenta.Status != StatusFerramenta.Disponivel)
         {
-            TempData["MensagemErro"] = "Ferramenta n�o est� dispon�vel para empr�stimo.";
+            TempData["MensagemErro"] = "Ferramenta não está disponível para empréstimo.";
             return RedirectToAction("Index", new { hortaId });
         }
 
@@ -109,7 +109,7 @@ public class EmprestimosController : Controller
 
         if (existe)
         {
-            TempData["MensagemInfo"] = "Voc� j� possui um pedido/ empr�stimo ativo para esta ferramenta.";
+            TempData["MensagemInfo"] = "Você já possui um pedido/ empréstimo ativo para esta ferramenta.";
             return RedirectToAction("Index", new { hortaId });
         }
 
@@ -125,8 +125,7 @@ public class EmprestimosController : Controller
         await _db.Emprestimos.AddAsync(emprestimo);
         await _db.SaveChangesAsync();
 
-        // Pedido salvo com Status = Pendente � gestor ver� imediatamente em Manage
-        TempData["MensagemSucesso"] = "Pedido de empr�stimo enviado. Aguarde a aprova��o do respons�vel.";
+        TempData["MensagemSucesso"] = "Pedido de empréstimo enviado. Aguarde a aprovação do responsável.";
         return RedirectToAction("Index", new { hortaId });
     }
 
@@ -137,7 +136,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Fa�a login para aprovar pedidos.";
+            TempData["MensagemInfo"] = "Faça login para aprovar pedidos.";
             return RedirectToAction("Login", "Account");
         }
 
@@ -153,7 +152,7 @@ public class EmprestimosController : Controller
 
         if (e.Status != StatusEmprestimo.Pendente)
         {
-            TempData["MensagemInfo"] = "Pedido j� processado.";
+            TempData["MensagemInfo"] = "Pedido já processado.";
             return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
@@ -179,7 +178,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Fa�a login para reprovar pedidos.";
+            TempData["MensagemInfo"] = "Faça login para reprovar pedidos.";
             return RedirectToAction("Login", "Account");
         }
 
@@ -195,7 +194,7 @@ public class EmprestimosController : Controller
 
         if (e.Status != StatusEmprestimo.Pendente)
         {
-            TempData["MensagemInfo"] = "Pedido j� processado.";
+            TempData["MensagemInfo"] = "Pedido já processado.";
             return RedirectToAction("Manage", "Horta", new { id = horta.Id });
         }
 
@@ -213,7 +212,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Fa�a login para devolver ferramenta.";
+            TempData["MensagemInfo"] = "Faça login para devolver ferramenta.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
@@ -226,7 +225,7 @@ public class EmprestimosController : Controller
         if (e.UsuarioId != usuarioId) return Forbid();
         if (e.Status != StatusEmprestimo.Aprovado || e.DataDevolucao != null)
         {
-            TempData["MensagemInfo"] = "Empr�stimo n�o pode ser devolvido.";
+            TempData["MensagemInfo"] = "empréstimo não pode ser devolvido.";
             return RedirectToAction("Index", new { hortaId });
         }
 
@@ -244,7 +243,7 @@ public class EmprestimosController : Controller
         var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
         if (string.IsNullOrEmpty(usuarioIdStr))
         {
-            TempData["MensagemInfo"] = "Fa�a login para ver seus empr�stimos.";
+            TempData["MensagemInfo"] = "Faça login para ver seus empréstimos.";
             return RedirectToAction("Login", "Account");
         }
         var usuarioId = Guid.Parse(usuarioIdStr);
